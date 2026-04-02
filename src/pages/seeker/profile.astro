@@ -1,0 +1,413 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+
+const SKILLS = [
+  'Carbon Accounting','Life Cycle Assessment (LCA)','ESG Reporting','CSRD Compliance',
+  'GRI Standards','TCFD Framework','SBTi','Carbon Markets','Scope 1, 2 & 3 Emissions',
+  'Renewable Energy','Climate Risk Analysis','Sustainability Strategy','Net Zero Planning',
+  'Supply Chain Sustainability','Environmental Impact Assessment','Green Finance',
+  'Impact Investing','Circular Economy','Biodiversity & Nature','Water Stewardship',
+  'Sustainability Data & Analytics','Climate Policy','Stakeholder Engagement',
+  'Carbon Capture & Storage','Clean Energy Systems','Sustainable Agriculture',
+  'Climate Tech','Environmental Science','Just Transition','B Corp / Certifications',
+];
+
+const EXP_OPTIONS = [
+  { value: '0-1', label: 'Less than 1 year' },
+  { value: '1-3', label: '1 – 3 years' },
+  { value: '3-5', label: '3 – 5 years' },
+  { value: '5-10', label: '5 – 10 years' },
+  { value: '10+', label: '10+ years' },
+];
+---
+
+<BaseLayout
+  title="My Profile | Sustainability Jobs"
+  description="Build your candidate profile to get discovered by sustainability employers."
+>
+  <Nav />
+
+  <main class="pt-28 pb-24">
+    <div class="max-w-[660px] mx-auto px-6">
+
+      <div id="loading" class="py-20 text-center text-[#444] font-display text-[13px] tracking-widest uppercase">
+        Loading…
+      </div>
+
+      <div id="content" class="hidden">
+        <a href="/seeker/dashboard" class="inline-flex items-center gap-2 text-[12px] text-[#444] hover:text-accent transition-colors font-display tracking-wider uppercase mb-10">
+          <svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M13 7H1M1 7L7 1M1 7L7 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Dashboard
+        </a>
+
+        <div class="section-rule mb-4"></div>
+        <span class="tag">Candidate Profile</span>
+        <h1 class="font-display font-bold text-[#f0f0f0] text-2xl tracking-tight mt-4 mb-2">Your Profile</h1>
+        <p class="text-[13px] text-[#555] mb-10">A complete profile gets noticed faster. Details save time when applying.</p>
+
+        <!-- Strength meter -->
+        <div id="strength-bar-wrap" class="mb-10 border border-[#1a1a22] bg-[#080808] p-6">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[10px] font-display tracking-widest uppercase text-[#444]">Profile Strength</span>
+            <span id="strength-tier" class="text-[10px] font-display tracking-widest uppercase px-2 py-0.5 border border-[#1a1a22] text-[#555]">—</span>
+          </div>
+          <div class="h-1.5 bg-[#111] w-full overflow-hidden">
+            <div id="strength-fill" class="h-full w-0 transition-all duration-700 ease-out" style="background: linear-gradient(90deg, #00e5ff, #a855f7);"></div>
+          </div>
+          <div class="flex items-center justify-between mt-2">
+            <span id="strength-pct" class="text-[12px] font-display text-[#555]">0%</span>
+            <span id="strength-next" class="text-[11px] text-[#333]"></span>
+          </div>
+        </div>
+
+        <div class="space-y-12">
+
+          <!-- Avatar -->
+          <div>
+            <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-5">Profile Photo</label>
+            <div class="flex items-center gap-6">
+              <div class="relative group shrink-0 cursor-pointer" id="avatar-btn">
+                <div class="w-20 h-20 rounded-full border border-[#1a1a22] bg-[#0d0d10] overflow-hidden flex items-center justify-center">
+                  <img id="avatar-preview" src="" alt="" class="hidden w-full h-full object-cover" />
+                  <svg id="avatar-placeholder" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2a2a2a" stroke-width="1"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                </div>
+                <div class="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                </div>
+              </div>
+              <input type="file" id="avatar-input" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" />
+              <div>
+                <p class="text-[13px] text-[#666]">Click your photo to change it</p>
+                <p class="text-[11px] text-[#333] mt-1">JPG, PNG or WebP · Max 2 MB</p>
+                <p id="avatar-status" class="text-[12px] mt-1.5 hidden"></p>
+                <button id="remove-avatar-btn" type="button" class="hidden mt-1.5 text-[11px] font-display uppercase text-[#444] hover:text-[#ff6b35] transition-colors">Remove photo</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Basic info -->
+          <div class="space-y-7">
+            <p class="text-[10px] font-display tracking-widest uppercase text-[#333] border-b border-[#1a1a22] pb-3">About You</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-7">
+              <div>
+                <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Full Name</label>
+                <input type="text" id="full-name" placeholder="Jane Smith"
+                  class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+              </div>
+              <div>
+                <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Location</label>
+                <input type="text" id="location" placeholder="London, UK"
+                  class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Bio</label>
+              <textarea id="bio" rows="4" placeholder="Briefly describe your background, what drives you in sustainability, and what you're looking for..."
+                class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors resize-none"></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-7">
+              <div>
+                <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Years of Experience</label>
+                <select id="years-experience"
+                  class="w-full bg-[#060608] border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] focus:outline-none focus:border-accent transition-colors appearance-none">
+                  <option value="">Select…</option>
+                  {EXP_OPTIONS.map(o => <option value={o.value}>{o.label}</option>)}
+                </select>
+              </div>
+              <div class="flex items-end pb-2.5">
+                <label class="flex items-center gap-3 cursor-pointer group w-full border-b border-[#1a1a22]">
+                  <div id="otw-box" class="w-4 h-4 border border-[#1a1a22] flex items-center justify-center shrink-0 transition-all group-hover:border-accent/50">
+                    <svg id="otw-check" class="hidden" width="9" height="9" viewBox="0 0 10 10" fill="none">
+                      <path d="M1.5 5L4 7.5L8.5 2.5" stroke="#00e5ff" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                  </div>
+                  <span class="text-[13px] text-[#888] font-display group-hover:text-[#f0f0f0] transition-colors">Open to work</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Skills -->
+          <div>
+            <p class="text-[10px] font-display tracking-widest uppercase text-[#333] border-b border-[#1a1a22] pb-3 mb-5">Your Skills</p>
+            <div class="flex flex-wrap gap-2" id="skills-picker">
+              {SKILLS.map(s => (
+                <button type="button" data-skill={s}
+                  class="skill-btn text-[10px] font-display tracking-[0.1em] uppercase px-2.5 py-1.5 border border-[#1a1a22] text-[#444] hover:border-[#333] hover:text-[#888] transition-all duration-150">
+                  {s}
+                </button>
+              ))}
+            </div>
+            <p id="skills-count" class="text-[11px] text-[#333] mt-3">0 selected</p>
+          </div>
+
+          <!-- Links -->
+          <div class="space-y-7">
+            <p class="text-[10px] font-display tracking-widest uppercase text-[#333] border-b border-[#1a1a22] pb-3">Links</p>
+
+            <div>
+              <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Resume Link</label>
+              <input type="url" id="resume-url" placeholder="Google Drive, Dropbox, or PDF link"
+                class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">LinkedIn Profile</label>
+              <input type="url" id="linkedin-url" placeholder="https://linkedin.com/in/you"
+                class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Portfolio / Website</label>
+              <input type="url" id="portfolio-url" placeholder="https://yoursite.com"
+                class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+            </div>
+          </div>
+
+          <div id="save-error" class="hidden text-[13px] text-[#ff6b35]"></div>
+          <div id="save-success" class="hidden text-[13px] text-accent p-4 border border-accent/20 bg-accent/5">
+            Profile saved.
+          </div>
+
+          <button type="button" id="save-btn"
+            class="inline-flex items-center gap-2 px-7 py-4 text-[13px] font-display font-medium tracking-widest uppercase bg-accent text-[#080808] hover:bg-white transition-colors duration-200 disabled:opacity-40"
+            style="clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);">
+            Save Profile →
+          </button>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<script>
+  const SEEKER_FIELDS: Array<{ key: string; label: string; pts: number; link: string }> = [
+    { key: 'avatar',           label: 'Add a profile photo',      pts: 15, link: '#avatar-btn' },
+    { key: 'full_name',        label: 'Add your full name',        pts: 10, link: '#full-name' },
+    { key: 'bio',              label: 'Write a short bio',         pts: 15, link: '#bio' },
+    { key: 'location',         label: 'Add your location',         pts: 10, link: '#location' },
+    { key: 'years_experience', label: 'Set years of experience',   pts: 10, link: '#years-experience' },
+    { key: 'skills',           label: 'Add at least one skill',    pts: 15, link: '#skills-picker' },
+    { key: 'linkedin_url',     label: 'Add your LinkedIn',         pts: 10, link: '#linkedin-url' },
+    { key: 'resume_url',       label: 'Add your resume link',      pts: 10, link: '#resume-url' },
+    { key: 'portfolio_url',    label: 'Add your portfolio',        pts:  5, link: '#portfolio-url' },
+  ];
+
+  function calcStrength(p: any) {
+    let score = 0;
+    for (const f of SEEKER_FIELDS) {
+      const v = p[f.key];
+      if (f.key === 'skills') { if (Array.isArray(v) && v.length > 0) score += f.pts; }
+      else if (v) score += f.pts;
+    }
+    return score;
+  }
+
+  function tierInfo(score: number) {
+    if (score >= 100) return { label: 'Complete',  color: '#00e5ff',  border: 'border-accent/40' };
+    if (score >= 75)  return { label: 'Pro',       color: '#34d399',  border: 'border-emerald-800/40' };
+    if (score >= 50)  return { label: 'Advanced',  color: '#60a5fa',  border: 'border-blue-800/40' };
+    if (score >= 25)  return { label: 'Rising',    color: '#fbbf24',  border: 'border-amber-800/30' };
+    return               { label: 'Starter',   color: '#555',     border: 'border-[#1a1a22]' };
+  }
+
+  function renderStrength(profile: any) {
+    const score = calcStrength(profile);
+    const tier = tierInfo(score);
+    const fillEl = document.getElementById('strength-fill')!;
+    const pctEl = document.getElementById('strength-pct')!;
+    const tierEl = document.getElementById('strength-tier')!;
+    const nextEl = document.getElementById('strength-next')!;
+
+    setTimeout(() => { fillEl.style.width = `${score}%`; }, 80);
+    pctEl.textContent = `${score}%`;
+    pctEl.style.color = tier.color;
+    tierEl.textContent = tier.label;
+    tierEl.style.color = tier.color;
+    tierEl.className = `text-[10px] font-display tracking-widest uppercase px-2 py-0.5 border ${tier.border}`;
+
+    const missing = SEEKER_FIELDS.filter(f => {
+      const v = profile[f.key];
+      return f.key === 'skills' ? !(Array.isArray(v) && v.length > 0) : !v;
+    });
+    nextEl.textContent = missing.length > 0 ? `+${missing[0].pts} pts: ${missing[0].label}` : '';
+  }
+
+  let selectedSkills = new Set<string>();
+  let openToWork = false;
+  let pendingAvatar: string | null = null;
+
+  async function uploadAvatar(file: File) {
+    const statusEl = document.getElementById('avatar-status')!;
+    statusEl.textContent = 'Uploading…';
+    statusEl.style.color = '#888';
+    statusEl.classList.remove('hidden');
+
+    const fd = new FormData();
+    fd.append('file', file);
+
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: fd });
+      const data = await res.json() as any;
+      if (res.ok) {
+        pendingAvatar = data.url;
+        showAvatar(data.url);
+        statusEl.textContent = 'Photo ready — click Save Profile.';
+        statusEl.style.color = '#00e5ff';
+      } else {
+        statusEl.textContent = data.error ?? 'Upload failed.';
+        statusEl.style.color = '#ff6b35';
+      }
+    } catch {
+      statusEl.textContent = 'Upload failed.';
+      statusEl.style.color = '#ff6b35';
+    }
+  }
+
+  function showAvatar(url: string) {
+    const img = document.getElementById('avatar-preview') as HTMLImageElement;
+    img.src = url;
+    img.classList.remove('hidden');
+    document.getElementById('avatar-placeholder')!.classList.add('hidden');
+    document.getElementById('remove-avatar-btn')!.classList.remove('hidden');
+  }
+
+  function hideAvatar() {
+    const img = document.getElementById('avatar-preview') as HTMLImageElement;
+    img.src = '';
+    img.classList.add('hidden');
+    document.getElementById('avatar-placeholder')!.classList.remove('hidden');
+    document.getElementById('remove-avatar-btn')!.classList.add('hidden');
+  }
+
+  async function saveProfile() {
+    const btn = document.getElementById('save-btn') as HTMLButtonElement;
+    const errEl = document.getElementById('save-error')!;
+    const successEl = document.getElementById('save-success')!;
+    errEl.classList.add('hidden');
+    successEl.classList.add('hidden');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
+    const body: Record<string, unknown> = {
+      full_name:        (document.getElementById('full-name') as HTMLInputElement).value.trim() || null,
+      bio:              (document.getElementById('bio') as HTMLTextAreaElement).value.trim() || null,
+      location:         (document.getElementById('location') as HTMLInputElement).value.trim() || null,
+      years_experience: (document.getElementById('years-experience') as HTMLSelectElement).value || null,
+      resume_url:       (document.getElementById('resume-url') as HTMLInputElement).value.trim() || null,
+      linkedin_url:     (document.getElementById('linkedin-url') as HTMLInputElement).value.trim() || null,
+      portfolio_url:    (document.getElementById('portfolio-url') as HTMLInputElement).value.trim() || null,
+      skills:           Array.from(selectedSkills),
+      open_to_work:     openToWork,
+    };
+
+    if (pendingAvatar !== null) body.avatar = pendingAvatar || null;
+
+    const res = await fetch('/api/profile', {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+    if (res.ok) {
+      successEl.classList.remove('hidden');
+      document.getElementById('avatar-status')!.classList.add('hidden');
+      // Re-fetch and re-render strength
+      const pr = await fetch('/api/profile', { credentials: 'include' });
+      if (pr.ok) renderStrength(await pr.json());
+    } else {
+      const data = await res.json() as any;
+      errEl.textContent = data.error ?? 'Failed to save.';
+      errEl.classList.remove('hidden');
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Save Profile →';
+  }
+
+  async function init() {
+    const meRes = await fetch('/api/auth/me', { credentials: 'include' });
+    if (!meRes.ok) { window.location.href = '/auth?mode=signin'; return; }
+    const me = await meRes.json() as { role: string };
+    if (me.role !== 'seeker') { window.location.href = '/'; return; }
+
+    const profileRes = await fetch('/api/profile', { credentials: 'include' });
+    if (!profileRes.ok) { window.location.href = '/seeker/dashboard'; return; }
+    const p = await profileRes.json() as any;
+
+    document.getElementById('loading')!.classList.add('hidden');
+    document.getElementById('content')!.classList.remove('hidden');
+
+    // Pre-fill
+    if (p.full_name) (document.getElementById('full-name') as HTMLInputElement).value = p.full_name;
+    if (p.bio) (document.getElementById('bio') as HTMLTextAreaElement).value = p.bio;
+    if (p.location) (document.getElementById('location') as HTMLInputElement).value = p.location;
+    if (p.years_experience) (document.getElementById('years-experience') as HTMLSelectElement).value = p.years_experience;
+    if (p.resume_url) (document.getElementById('resume-url') as HTMLInputElement).value = p.resume_url;
+    if (p.linkedin_url) (document.getElementById('linkedin-url') as HTMLInputElement).value = p.linkedin_url;
+    if (p.portfolio_url) (document.getElementById('portfolio-url') as HTMLInputElement).value = p.portfolio_url;
+    if (p.avatar) { showAvatar(p.avatar); pendingAvatar = p.avatar; }
+
+    openToWork = Boolean(p.open_to_work);
+    if (openToWork) {
+      document.getElementById('otw-check')!.classList.remove('hidden');
+      document.getElementById('otw-box')!.classList.add('border-accent/50');
+    }
+
+    // Skills
+    selectedSkills = new Set(Array.isArray(p.skills) ? p.skills : []);
+    const skillsCount = document.getElementById('skills-count')!;
+    document.querySelectorAll<HTMLButtonElement>('.skill-btn').forEach(btn => {
+      const skill = btn.dataset.skill!;
+      if (selectedSkills.has(skill)) {
+        btn.classList.add('border-accent','text-accent','bg-accent/5');
+        btn.classList.remove('border-[#1a1a22]','text-[#444]');
+      }
+      btn.addEventListener('click', () => {
+        if (selectedSkills.has(skill)) {
+          selectedSkills.delete(skill);
+          btn.classList.remove('border-accent','text-accent','bg-accent/5');
+          btn.classList.add('border-[#1a1a22]','text-[#444]');
+        } else {
+          selectedSkills.add(skill);
+          btn.classList.add('border-accent','text-accent','bg-accent/5');
+          btn.classList.remove('border-[#1a1a22]','text-[#444]');
+        }
+        skillsCount.textContent = `${selectedSkills.size} selected`;
+      });
+    });
+    skillsCount.textContent = `${selectedSkills.size} selected`;
+
+    // Open to work toggle
+    document.getElementById('otw-box')!.closest('label')!.addEventListener('click', () => {
+      openToWork = !openToWork;
+      document.getElementById('otw-check')!.classList.toggle('hidden', !openToWork);
+      document.getElementById('otw-box')!.classList.toggle('border-accent/50', openToWork);
+    });
+
+    // Avatar upload
+    const avatarInput = document.getElementById('avatar-input') as HTMLInputElement;
+    document.getElementById('avatar-btn')!.addEventListener('click', () => avatarInput.click());
+    avatarInput.addEventListener('change', async () => {
+      const file = avatarInput.files?.[0];
+      if (file) await uploadAvatar(file);
+    });
+    document.getElementById('remove-avatar-btn')!.addEventListener('click', () => {
+      pendingAvatar = '';
+      hideAvatar();
+    });
+
+    document.getElementById('save-btn')!.addEventListener('click', saveProfile);
+
+    renderStrength(p);
+  }
+
+  init();
+</script>

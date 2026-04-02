@@ -48,6 +48,17 @@ import Footer from '../components/Footer.astro';
           <div id="job-description" class="text-[14px] text-[#888] leading-relaxed whitespace-pre-wrap"></div>
         </div>
 
+        <!-- Company card (shown when logo or description is set) -->
+        <div id="company-card" class="hidden border border-[#1a1a22] bg-[#0d0d10] p-7 mb-10">
+          <div class="flex items-start gap-5">
+            <img id="company-logo" src="" alt="" class="hidden w-14 h-14 object-contain border border-[#1a1a22] p-1 bg-[#080808] shrink-0" />
+            <div class="flex-1 min-w-0">
+              <p id="company-name-display" class="text-[13px] font-display font-bold text-[#f0f0f0] mb-2"></p>
+              <p id="company-description-display" class="text-[13px] text-[#666] leading-relaxed"></p>
+            </div>
+          </div>
+        </div>
+
         <div class="border border-[#1a1a22] p-8 relative overflow-hidden">
           <div class="absolute top-0 left-0 right-0 h-px" style="background: linear-gradient(90deg, #00e5ff, #a855f7); box-shadow: 0 0 8px rgba(0,229,255,0.4);"></div>
           <h2 class="font-display font-bold text-[#f0f0f0] text-xl tracking-tight mb-2">Ready to apply?</h2>
@@ -106,6 +117,22 @@ import Footer from '../components/Footer.astro';
         }
         document.getElementById('job-date')!.textContent = new Date(j.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
         document.getElementById('job-description')!.textContent = j.description ?? '';
+
+        // Company card
+        if (j.company_logo || j.company_description) {
+          const card = document.getElementById('company-card')!;
+          card.classList.remove('hidden');
+          if (j.company_logo) {
+            const logoEl = document.getElementById('company-logo') as HTMLImageElement;
+            logoEl.src = j.company_logo;
+            logoEl.alt = j.company ?? '';
+            logoEl.classList.remove('hidden');
+          }
+          if (j.company_description) {
+            document.getElementById('company-description-display')!.textContent = j.company_description;
+          }
+          document.getElementById('company-name-display')!.textContent = j.company_name || j.company;
+        }
 
         const tagsEl = document.getElementById('job-tags')!;
         (j.skills ?? []).forEach((s: string) => {

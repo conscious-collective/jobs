@@ -1,0 +1,192 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<BaseLayout
+  title="Inbox | Sustainability Jobs"
+  description="Your messages with employers."
+>
+  <Nav />
+
+  <main class="pt-28 pb-24">
+    <div class="max-w-[720px] mx-auto px-6">
+
+      <div id="loading" class="py-20 text-center text-[#444] font-display text-[13px] tracking-widest uppercase">
+        Loading…
+      </div>
+
+      <div id="content" class="hidden">
+        <a id="back-link" href="/seeker/dashboard" class="inline-flex items-center gap-2 text-[12px] text-[#444] hover:text-accent transition-colors font-display tracking-wider uppercase mb-10">
+          <svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M13 7H1M1 7L7 1M1 7L7 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span id="back-label">Back</span>
+        </a>
+
+        <div class="section-rule mb-4"></div>
+        <span class="tag">Inbox</span>
+        <h1 id="inbox-title" class="font-display font-bold text-[#f0f0f0] text-2xl tracking-tight mt-4 mb-1"></h1>
+        <p id="inbox-sub" class="text-[13px] text-[#555] mb-10"></p>
+
+        <div id="messages-list" class="space-y-3 mb-6 min-h-[120px]"></div>
+
+        <div class="border border-[#1a1a22] p-4">
+          <textarea id="msg-input" rows="3" placeholder="Type a message… (Cmd/Ctrl + Enter to send)"
+            class="w-full bg-transparent text-[13px] text-[#f0f0f0] placeholder-[#333] focus:outline-none resize-none mb-3"></textarea>
+          <div class="flex justify-end">
+            <button id="msg-send"
+              class="inline-flex items-center gap-2 px-5 py-3 text-[12px] font-display font-medium tracking-widest uppercase bg-accent text-[#080808] hover:bg-white transition-colors duration-200"
+              style="clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%);">
+              Send Message →
+            </button>
+          </div>
+        </div>
+
+        <div id="send-error" class="hidden mt-3 text-[13px] text-[#ff6b35]"></div>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const applicationId = params.get('application_id');
+  let myUserId = '';
+  let myRole = '';
+
+  function escapeHtml(s: string) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  async function loadMessages() {
+    const container = document.getElementById('messages-list')!;
+    const res = await fetch(`/api/messages?application_id=${applicationId}`, { credentials: 'include' });
+    const msgs = res.ok ? await res.json() as any[] : [];
+
+    if (msgs.length === 0) {
+      container.innerHTML = '<p class="text-[13px] text-[#333] italic py-8 text-center">No messages yet. Start the conversation.</p>';
+      return;
+    }
+
+    container.innerHTML = msgs.map(m => {
+      const isMine = m.sender_id === myUserId;
+      return `
+        <div class="flex ${isMine ? 'flex-row-reverse' : 'flex-row'}">
+          <div class="max-w-[75%]">
+            <div class="text-[10px] font-display text-[#333] mb-1 ${isMine ? 'text-right' : ''}">
+              ${isMine ? 'You' : escapeHtml(m.sender_name || m.sender_email)} ·
+              ${new Date(m.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+            </div>
+            <div class="text-[13px] text-[#ccc] p-4 border ${isMine ? 'border-accent/20 bg-accent/5' : 'border-[#1a1a22] bg-[#0d0d10]'} whitespace-pre-wrap leading-relaxed">${escapeHtml(m.body)}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Scroll to bottom
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function escapeHtml(s: string) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  async function loadMessages() {
+    const container = document.getElementById('messages-list')!;
+    const res = await fetch(`/api/messages?application_id=${applicationId}`, { credentials: 'include' });
+    const msgs = res.ok ? await res.json() as any[] : [];
+
+    if (msgs.length === 0) {
+      container.innerHTML = '<p class="text-[13px] text-[#333] italic py-8 text-center">No messages yet. Start the conversation.</p>';
+      return;
+    }
+
+    container.innerHTML = msgs.map(m => {
+      const isMine = m.sender_id === myUserId;
+      return `
+        <div class="flex ${isMine ? 'flex-row-reverse' : 'flex-row'}">
+          <div class="max-w-[75%]">
+            <div class="text-[10px] font-display text-[#333] mb-1 ${isMine ? 'text-right' : ''}">
+              ${isMine ? 'You' : escapeHtml(m.sender_name || m.sender_email)} ·
+              ${new Date(m.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+            </div>
+            <div class="text-[13px] text-[#ccc] p-4 border ${isMine ? 'border-accent/20 bg-accent/5' : 'border-[#1a1a22] bg-[#0d0d10]'} whitespace-pre-wrap leading-relaxed">${escapeHtml(m.body)}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+    container.scrollTop = container.scrollHeight;
+  }
+
+  async function sendMessage() {
+    const ta = document.getElementById('msg-input') as HTMLTextAreaElement;
+    const body = ta.value.trim();
+    if (!body) return;
+
+    const errEl = document.getElementById('send-error')!;
+    errEl.classList.add('hidden');
+
+    const res = await fetch('/api/messages', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ application_id: applicationId, body }),
+    });
+
+    if (res.ok) {
+      ta.value = '';
+      await loadMessages();
+    } else {
+      const data = await res.json() as any;
+      errEl.textContent = data.error ?? 'Failed to send message.';
+      errEl.classList.remove('hidden');
+    }
+  }
+
+  async function init() {
+    if (!applicationId) { window.location.href = '/'; return; }
+
+    const meRes = await fetch('/api/auth/me', { credentials: 'include' });
+    if (!meRes.ok) { window.location.href = '/auth?mode=signin'; return; }
+    const me = await meRes.json() as { id: string; email: string; role: string };
+    myUserId = me.id;
+    myRole = me.role;
+
+    // Set back link based on role
+    const backLink = document.getElementById('back-link') as HTMLAnchorElement;
+    const backLabel = document.getElementById('back-label')!;
+    if (me.role === 'employer') {
+      backLink.href = '/employer/dashboard';
+      backLabel.textContent = 'Dashboard';
+    } else {
+      backLink.href = '/seeker/dashboard';
+      backLabel.textContent = 'My Applications';
+    }
+
+    // Validate access (will return 403/404 if not authorized)
+    const accessCheck = await fetch(`/api/messages?application_id=${applicationId}`, { credentials: 'include' });
+    if (!accessCheck.ok) { window.location.href = me.role === 'employer' ? '/employer/dashboard' : '/seeker/dashboard'; return; }
+
+    document.getElementById('loading')!.classList.add('hidden');
+    document.getElementById('content')!.classList.remove('hidden');
+
+    document.getElementById('inbox-title')!.textContent = me.role === 'employer' ? 'Applicant Messages' : 'Messages from Employer';
+    document.getElementById('inbox-sub')!.textContent = me.role === 'employer'
+      ? 'Communicate directly with this applicant.'
+      : 'View and reply to messages from the employer.';
+
+    await loadMessages();
+
+    document.getElementById('msg-send')!.addEventListener('click', sendMessage);
+    document.getElementById('msg-input')!.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+  }
+
+  init();
+</script>

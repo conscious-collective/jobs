@@ -13,9 +13,7 @@ import Footer from '../../components/Footer.astro';
   <main class="pt-28 pb-24">
     <div class="max-w-[1000px] mx-auto px-6 lg:px-10">
 
-      <div id="loading" class="py-20 text-center text-[#444] font-display text-[13px] tracking-widest uppercase">
-        Loading…
-      </div>
+      <div id="loading" class="py-20 text-center text-[#444] font-display text-[13px] tracking-widest uppercase">Loading…</div>
 
       <div id="content" class="hidden">
         <a href="/employer/dashboard" class="inline-flex items-center gap-2 text-[12px] text-[#444] hover:text-accent transition-colors font-display tracking-wider uppercase mb-10">
@@ -25,14 +23,42 @@ import Footer from '../../components/Footer.astro';
 
         <div class="section-rule mb-4"></div>
         <span class="tag">Applicants</span>
-        <h1 id="job-title" class="font-display font-bold text-[#f0f0f0] text-2xl tracking-tight mt-4 mb-10"></h1>
+        <div class="flex items-start justify-between gap-4 mt-4 mb-8">
+          <h1 id="job-title" class="font-display font-bold text-[#f0f0f0] text-2xl tracking-tight"></h1>
+          <span id="app-count" class="shrink-0 text-[12px] font-display text-[#444] mt-1"></span>
+        </div>
+
+        <!-- Filter bar -->
+        <div class="border border-[#1a1a22] bg-[#080808] p-5 mb-8 space-y-4">
+          <div class="flex flex-col sm:flex-row gap-3">
+            <input id="filter-search" type="text" placeholder="Search by name or email…"
+              class="flex-1 bg-transparent border border-[#1a1a22] px-4 py-2.5 text-[13px] text-[#f0f0f0] placeholder-[#333] focus:outline-none focus:border-accent/50 transition-colors font-display" />
+            <div class="flex items-center gap-2 shrink-0">
+              <div id="filter-saved-badge" class="hidden inline-flex items-center gap-1.5 text-[10px] font-display tracking-widest uppercase text-accent/60 border border-accent/20 px-2 py-1.5">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Saved
+              </div>
+              <span id="filter-result-count" class="text-[11px] font-display text-[#444]"></span>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2" id="status-filters">
+            {['All', 'pending', 'reviewed', 'shortlisted', 'accepted', 'rejected'].map((s, i) => (
+              <button data-status={s}
+                class={`status-filter-btn text-[10px] font-display tracking-widest uppercase px-3 py-1.5 border transition-all duration-150 ${i === 0 ? 'border-accent/60 text-accent/60' : 'border-[#1a1a22] text-[#444] hover:border-[#2a2a2a] hover:text-[#666]'}`}>
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div id="no-apps" class="hidden text-center py-16 border border-dashed border-[#1a1a22]">
           <p class="text-[14px] text-[#555]">No applicants yet.</p>
           <p class="text-[13px] text-[#333] mt-1">Share your job listing to attract candidates.</p>
         </div>
-
-        <div id="apps-list" class="space-y-px"></div>
+        <div id="no-match" class="hidden text-center py-12 border border-dashed border-[#1a1a22]">
+          <p class="text-[14px] text-[#555]">No applicants match these filters.</p>
+        </div>
+        <div id="apps-list" class="space-y-4"></div>
       </div>
     </div>
   </main>
@@ -41,37 +67,244 @@ import Footer from '../../components/Footer.astro';
 </BaseLayout>
 
 <script>
+  // ── state ──────────────────────────────────────────────────────────────────
   const STATUS_COLORS: Record<string, string> = {
-    pending: 'border-[#1a1a22] text-[#555]',
-    reviewed: 'border-yellow-800/40 text-yellow-600',
-    accepted: 'border-emerald-800/40 text-emerald-600',
-    rejected: 'border-red-900/40 text-red-700',
+    pending:     'border-[#1a1a22] text-[#555]',
+    reviewed:    'border-yellow-800/40 text-yellow-600',
+    shortlisted: 'border-blue-800/40 text-blue-500',
+    accepted:    'border-emerald-800/40 text-emerald-600',
+    rejected:    'border-red-900/40 text-red-700',
   };
 
-  async function updateStatus(appId: string, status: string, btn: HTMLButtonElement) {
-    btn.disabled = true;
+  let allApplicants: any[] = [];
+  let jobQuestions: any[]  = [];
+  let jobId        = '';
+  let myUserId     = '';
+  let filterStatus = 'All';
+  let filterSearch = '';
+  let saveTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function escapeHtml(s: string) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── filter ─────────────────────────────────────────────────────────────────
+  function applyFilter() {
+    const q = filterSearch.toLowerCase();
+    const filtered = allApplicants.filter(a => {
+      const matchStatus = filterStatus === 'All' || a.status === filterStatus;
+      const haystack    = `${a.full_name ?? ''} ${a.email ?? ''}`.toLowerCase();
+      return matchStatus && (!q || haystack.includes(q));
+    });
+
+    document.getElementById('filter-result-count')!.textContent =
+      filtered.length === allApplicants.length
+        ? `${allApplicants.length} total`
+        : `${filtered.length} of ${allApplicants.length}`;
+
+    document.getElementById('no-match')!.classList.toggle('hidden', filtered.length > 0 || allApplicants.length === 0);
+    document.getElementById('apps-list')!.classList.toggle('hidden', filtered.length === 0);
+    renderApplicants(filtered);
+  }
+
+  function applyStatusUI(s: string) {
+    document.querySelectorAll<HTMLElement>('.status-filter-btn').forEach(b => {
+      const on = b.dataset.status === s;
+      b.classList.toggle('border-accent/60', on);
+      b.classList.toggle('text-accent/60', on);
+      b.classList.toggle('border-[#1a1a22]', !on);
+      b.classList.toggle('text-[#444]', !on);
+    });
+  }
+
+  // ── save filter ────────────────────────────────────────────────────────────
+  function scheduleSave() {
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/employer/jobs/${jobId}`, {
+          method: 'PATCH', credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ saved_applicant_filter: JSON.stringify({ status: filterStatus, search: filterSearch }) }),
+        });
+        if (res.ok) {
+          const badge = document.getElementById('filter-saved-badge')!;
+          badge.classList.remove('hidden');
+          setTimeout(() => badge.classList.add('hidden'), 2500);
+        }
+      } catch {}
+    }, 700);
+  }
+
+  // ── status update ──────────────────────────────────────────────────────────
+  async function updateStatus(appId: string, status: string) {
     const res = await fetch(`/api/applications/${appId}`, {
-      method: 'PATCH',
-      credentials: 'include',
+      method: 'PATCH', credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
     });
     if (res.ok) {
-      window.location.reload();
-    } else {
-      btn.disabled = false;
+      const a = allApplicants.find(x => x.id === appId);
+      if (a) { a.status = status; applyFilter(); }
     }
   }
 
+  // ── messaging ──────────────────────────────────────────────────────────────
+  async function loadMessages(appId: string, container: HTMLElement) {
+    container.innerHTML = '<p class="text-[12px] text-[#333]">Loading…</p>';
+    const res  = await fetch(`/api/messages?application_id=${appId}`, { credentials: 'include' });
+    const msgs = res.ok ? await res.json() as any[] : [];
+    if (!msgs.length) { container.innerHTML = '<p class="text-[12px] text-[#333] italic">No messages yet.</p>'; return; }
+    container.innerHTML = msgs.map(m => {
+      const mine = m.sender_id === myUserId;
+      return `<div class="flex ${mine ? 'flex-row-reverse' : ''}"><div class="max-w-[75%]">
+        <div class="text-[10px] font-display text-[#333] mb-1 ${mine ? 'text-right' : ''}">${mine ? 'You' : escapeHtml(m.sender_name || m.sender_email)} · ${new Date(m.created_at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+        <div class="text-[13px] text-[#ccc] p-3 border ${mine ? 'border-accent/20 bg-accent/5 text-right' : 'border-[#1a1a22] bg-[#0d0d10]'} whitespace-pre-wrap">${escapeHtml(m.body)}</div>
+      </div></div>`;
+    }).join('');
+  }
+
+  async function sendMessage(appId: string, body: string, container: HTMLElement) {
+    const res = await fetch('/api/messages', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ application_id: appId, body }),
+    });
+    if (res.ok) await loadMessages(appId, container);
+  }
+
+  // ── render cards ───────────────────────────────────────────────────────────
+  function renderApplicants(applicants: any[]) {
+    const listEl = document.getElementById('apps-list')!;
+    if (!applicants.length) { listEl.innerHTML = ''; return; }
+
+    listEl.innerHTML = applicants.map(a => {
+      const answersMap: Record<string,string> = {};
+      (a.answers ?? []).forEach((x: any) => { answersMap[x.question_id] = x.answer; });
+
+      const answersHtml = jobQuestions.length ? `
+        <div class="mt-4 space-y-3">
+          <div class="text-[10px] font-display tracking-widest uppercase text-[#333] mb-1">Qualifying Answers</div>
+          ${jobQuestions.map(q => `<div>
+            <div class="text-[11px] font-display text-[#444] mb-1">${escapeHtml(q.question)}</div>
+            <p class="text-[13px] text-[#666]">${answersMap[q.id] ? escapeHtml(answersMap[q.id]) : '<em style="color:#333">No answer</em>'}</p>
+          </div>`).join('')}
+        </div>` : '';
+
+      return `
+      <div class="border border-[#1a1a22] bg-[#080808] overflow-hidden" data-app-id="${a.id}">
+        <div class="p-7 md:p-8">
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start gap-3 mb-3">
+                ${a.avatar
+                  ? `<img src="${escapeHtml(a.avatar)}" alt="" class="w-10 h-10 rounded-full object-cover border border-[#1a1a22] shrink-0" />`
+                  : `<div class="w-10 h-10 rounded-full border border-[#1a1a22] bg-[#0d0d10] flex items-center justify-center shrink-0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="1"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>`}
+                <div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-[14px] font-display font-bold text-[#f0f0f0]">${escapeHtml(a.full_name || a.email)}</span>
+                    <span class="status-badge text-[10px] font-display tracking-widest uppercase px-2 py-0.5 border ${STATUS_COLORS[a.status] ?? STATUS_COLORS.pending}">${a.status}</span>
+                    ${a.open_to_work ? `<span class="text-[10px] font-display px-2 py-0.5 border border-emerald-800/40 text-emerald-600">Open to work</span>` : ''}
+                  </div>
+                  <div class="flex flex-wrap gap-3 mt-1">
+                    <span class="text-[12px] text-[#555]">${escapeHtml(a.email)}</span>
+                    ${a.phone    ? `<span class="text-[12px] text-[#555]">${escapeHtml(a.phone)}</span>` : ''}
+                    ${a.location ? `<span class="text-[12px] text-[#555]">${escapeHtml(a.location)}</span>` : ''}
+                    ${a.years_experience ? `<span class="text-[11px] font-display text-[#444] border border-[#1a1a22] px-2 py-0.5">${escapeHtml(a.years_experience)} yrs</span>` : ''}
+                    <span class="text-[11px] text-[#333] font-display">${new Date(a.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span>
+                  </div>
+                </div>
+              </div>
+
+              ${a.bio ? `<p class="text-[13px] text-[#666] mb-3 max-w-[520px]">${escapeHtml(a.bio)}</p>` : ''}
+              ${a.profile_skills?.length ? `<div class="flex flex-wrap gap-1.5 mb-3">${a.profile_skills.map((s: string) => `<span class="text-[10px] px-2 py-0.5 border border-accent/15 text-accent/50 font-display">${escapeHtml(s)}</span>`).join('')}</div>` : ''}
+              ${a.interest_statement ? `<div class="mb-3"><div class="text-[10px] font-display tracking-widest uppercase text-[#333] mb-1">Interest in Company</div><p class="text-[13px] text-[#666] leading-relaxed max-w-[520px] whitespace-pre-wrap">${escapeHtml(a.interest_statement)}</p></div>` : ''}
+              ${a.cover_letter ? `<div class="mb-3"><div class="text-[10px] font-display tracking-widest uppercase text-[#333] mb-1">Cover Letter</div><p class="text-[13px] text-[#666] leading-relaxed max-w-[520px] whitespace-pre-wrap">${escapeHtml(a.cover_letter)}</p></div>` : ''}
+              ${answersHtml}
+
+              <div class="flex flex-wrap gap-3 mt-3">
+                ${a.resume_url ? `<a href="${escapeHtml(a.resume_url)}" target="_blank" rel="noopener" class="text-[11px] font-display tracking-wide text-accent hover:text-white transition-colors border-b border-accent/30 pb-px">Resume →</a>` : ''}
+                ${(a.linkedin_url||a.profile_linkedin) ? `<a href="${escapeHtml(a.linkedin_url||a.profile_linkedin)}" target="_blank" rel="noopener" class="text-[11px] font-display tracking-wide text-accent hover:text-white transition-colors border-b border-accent/30 pb-px">LinkedIn →</a>` : ''}
+                ${(a.portfolio_url||a.profile_portfolio) ? `<a href="${escapeHtml(a.portfolio_url||a.profile_portfolio)}" target="_blank" rel="noopener" class="text-[11px] font-display tracking-wide text-accent hover:text-white transition-colors border-b border-accent/30 pb-px">Portfolio →</a>` : ''}
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-2 shrink-0 min-w-[140px]">
+              <div class="text-[10px] font-display tracking-widest uppercase text-[#333] mb-1">Update Status</div>
+              ${['pending','reviewed','shortlisted','accepted','rejected'].map(s => `
+                <button data-status="${s}" class="status-btn text-[11px] font-display tracking-widest uppercase px-3 py-2 border transition-all duration-200 ${a.status === s ? (STATUS_COLORS[s] ?? '') + ' bg-[#0d0d10]' : 'border-[#1a1a22] text-[#444] hover:border-[#2a2a2a] hover:text-[#666]'}">
+                  ${s}
+                </button>`).join('')}
+            </div>
+          </div>
+        </div>
+
+        <div class="border-t border-[#1a1a22]">
+          <button type="button" class="inbox-toggle w-full text-left px-7 py-3 flex items-center gap-2 text-[11px] font-display tracking-widest uppercase text-[#444] hover:text-accent transition-colors">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Messages
+            <svg class="inbox-chevron ml-auto w-3 h-3 transition-transform" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+          <div class="inbox-panel hidden px-7 pb-7">
+            <div class="messages-list space-y-3 mb-4 max-h-64 overflow-y-auto"></div>
+            <div class="flex gap-2">
+              <textarea class="msg-input flex-1 bg-transparent border border-[#1a1a22] p-3 text-[13px] text-[#f0f0f0] placeholder-[#333] focus:outline-none focus:border-accent transition-colors resize-none" rows="2" placeholder="Type a message… (⌘+Enter to send)"></textarea>
+              <button type="button" class="msg-send px-4 py-2 text-[11px] font-display tracking-widest uppercase bg-accent text-[#080808] hover:bg-white transition-colors self-end">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+    // Wire each card
+    listEl.querySelectorAll<HTMLElement>('[data-app-id]').forEach(card => {
+      const appId = card.dataset.appId!;
+
+      card.querySelectorAll<HTMLButtonElement>('.status-btn').forEach(btn => {
+        btn.addEventListener('click', () => updateStatus(appId, btn.dataset.status!));
+      });
+
+      const toggle  = card.querySelector<HTMLElement>('.inbox-toggle')!;
+      const panel   = card.querySelector<HTMLElement>('.inbox-panel')!;
+      const chevron = card.querySelector<HTMLElement>('.inbox-chevron')!;
+      const msgList = card.querySelector<HTMLElement>('.messages-list')!;
+      let loaded = false;
+
+      toggle.addEventListener('click', async () => {
+        const open = !panel.classList.contains('hidden');
+        panel.classList.toggle('hidden', open);
+        chevron.style.transform = open ? '' : 'rotate(180deg)';
+        if (!open && !loaded) { loaded = true; await loadMessages(appId, msgList); }
+      });
+
+      card.querySelector<HTMLButtonElement>('.msg-send')!.addEventListener('click', async () => {
+        const ta = card.querySelector<HTMLTextAreaElement>('.msg-input')!;
+        const body = ta.value.trim(); if (!body) return;
+        ta.value = ''; await sendMessage(appId, body, msgList);
+      });
+
+      card.querySelector<HTMLTextAreaElement>('.msg-input')!.addEventListener('keydown', async (e) => {
+        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+          e.preventDefault();
+          const ta = e.target as HTMLTextAreaElement;
+          const body = ta.value.trim(); if (!body) return;
+          ta.value = ''; await sendMessage(appId, body, msgList);
+        }
+      });
+    });
+  }
+
+  // ── main init ──────────────────────────────────────────────────────────────
   async function init() {
     const params = new URLSearchParams(window.location.search);
-    const jobId = params.get('job_id');
+    jobId = params.get('job_id') ?? '';
     if (!jobId) { window.location.href = '/employer/dashboard'; return; }
 
     const meRes = await fetch('/api/auth/me', { credentials: 'include' });
     if (!meRes.ok) { window.location.href = '/auth?mode=signin'; return; }
-    const me = await meRes.json() as { role: string };
+    const me = await meRes.json() as { id: string; role: string };
     if (me.role !== 'employer') { window.location.href = '/'; return; }
+    myUserId = me.id;
 
     const res = await fetch(`/api/employer/applicants/${jobId}`, { credentials: 'include' });
     if (!res.ok) { window.location.href = '/employer/dashboard'; return; }
@@ -80,61 +313,39 @@ import Footer from '../../components/Footer.astro';
     document.getElementById('loading')!.classList.add('hidden');
     document.getElementById('content')!.classList.remove('hidden');
     document.getElementById('job-title')!.textContent = job.title;
+    document.getElementById('app-count')!.textContent = `${applicants.length} applicant${applicants.length !== 1 ? 's' : ''}`;
     document.title = `Applicants — ${job.title} | Sustainability Jobs`;
 
-    const listEl = document.getElementById('apps-list')!;
+    allApplicants = applicants;
+    jobQuestions  = job.questions ?? [];
 
-    if (applicants.length === 0) {
+    if (!applicants.length) {
       document.getElementById('no-apps')!.classList.remove('hidden');
-      return;
     }
 
-    listEl.innerHTML = applicants.map(a => `
-      <div class="border border-[#1a1a22] bg-[#080808] p-7 md:p-8 relative overflow-hidden" data-app-id="${a.id}">
-        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
-          <div class="flex-1">
-            <div class="flex flex-wrap items-center gap-2 mb-3">
-              <span class="text-[14px] font-display font-bold text-[#f0f0f0]">${a.email}</span>
-              <span class="text-[10px] font-display tracking-widest uppercase px-2 py-0.5 border ${STATUS_COLORS[a.status] ?? STATUS_COLORS.pending}">
-                ${a.status}
-              </span>
-              <span class="text-[11px] text-[#333] font-display">${new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-            </div>
+    // Restore saved filter
+    if (job.saved_applicant_filter) {
+      filterStatus = job.saved_applicant_filter.status ?? 'All';
+      filterSearch = job.saved_applicant_filter.search ?? '';
+      applyStatusUI(filterStatus);
+      (document.getElementById('filter-search') as HTMLInputElement).value = filterSearch;
+    }
 
-            ${a.bio ? `<p class="text-[13px] text-[#666] mb-3 max-w-[500px]">${a.bio}</p>` : ''}
+    // Wire filter bar
+    document.getElementById('filter-search')!.addEventListener('input', (e) => {
+      filterSearch = (e.target as HTMLInputElement).value;
+      applyFilter(); scheduleSave();
+    });
 
-            ${a.cover_letter ? `
-            <div class="mb-4">
-              <div class="text-[10px] font-display tracking-widest uppercase text-[#333] mb-2">Cover Letter</div>
-              <p class="text-[13px] text-[#666] leading-relaxed max-w-[560px] whitespace-pre-wrap">${a.cover_letter}</p>
-            </div>` : ''}
-
-            <div class="flex flex-wrap gap-3">
-              ${a.linkedin_url ? `<a href="${a.linkedin_url}" target="_blank" rel="noopener" class="text-[11px] font-display tracking-wide text-accent hover:text-white transition-colors border-b border-accent/30 pb-px">LinkedIn →</a>` : ''}
-              ${a.portfolio_url ? `<a href="${a.portfolio_url}" target="_blank" rel="noopener" class="text-[11px] font-display tracking-wide text-accent hover:text-white transition-colors border-b border-accent/30 pb-px">Portfolio →</a>` : ''}
-            </div>
-          </div>
-
-          <div class="flex flex-col gap-2 shrink-0 min-w-[140px]">
-            <div class="text-[10px] font-display tracking-widest uppercase text-[#333] mb-1">Update Status</div>
-            ${['pending','reviewed','accepted','rejected'].map(s => `
-              <button data-status="${s}" class="status-btn text-[11px] font-display tracking-widest uppercase px-3 py-2 border transition-all duration-200 ${a.status === s ? (STATUS_COLORS[s] ?? '') + ' bg-[#0d0d10]' : 'border-[#1a1a22] text-[#444] hover:border-[#2a2a2a] hover:text-[#666]'}">
-                ${s}
-              </button>
-            `).join('')}
-          </div>
-        </div>
-      </div>
-    `).join('');
-
-    listEl.querySelectorAll('.status-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const card = (e.target as HTMLElement).closest('[data-app-id]')!;
-        const appId = (card as HTMLElement).dataset.appId!;
-        const status = (btn as HTMLElement).dataset.status!;
-        updateStatus(appId, status, btn as HTMLButtonElement);
+    document.querySelectorAll<HTMLElement>('.status-filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterStatus = btn.dataset.status!;
+        applyStatusUI(filterStatus);
+        applyFilter(); scheduleSave();
       });
     });
+
+    applyFilter();
   }
 
   init();

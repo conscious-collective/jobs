@@ -139,6 +139,24 @@ const SKILLS = [
             <p class="text-[11px] text-[#333] mt-2">Leave blank to use the built-in application form.</p>
           </div>
 
+          <!-- Qualifying Questions -->
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase">
+                  Qualifying Questions <span class="text-[#333]">(optional)</span>
+                </label>
+                <p class="text-[11px] text-[#333] mt-1">Ask applicants specific questions relevant to this role.</p>
+              </div>
+              <button type="button" id="add-question-btn"
+                class="text-[11px] font-display tracking-widest uppercase px-3 py-2 border border-[#1a1a22] text-[#555] hover:border-accent/50 hover:text-accent transition-all shrink-0">
+                + Add Question
+              </button>
+            </div>
+
+            <div id="questions-list" class="space-y-4"></div>
+          </div>
+
           <div id="post-error" class="hidden text-[13px] text-[#ff6b35]"></div>
 
           <button type="submit" id="post-btn"
@@ -156,6 +174,42 @@ const SKILLS = [
 
 <script>
   let selectedCat = '';
+  const questions: Array<{ id: string; question: string; required: boolean }> = [];
+
+  function renderQuestions() {
+    const listEl = document.getElementById('questions-list')!;
+    if (questions.length === 0) {
+      listEl.innerHTML = '';
+      return;
+    }
+    listEl.innerHTML = questions.map((q, i) => `
+      <div class="flex gap-3 items-start border border-[#1a1a22] p-4" data-q-index="${i}">
+        <div class="flex-1">
+          <input type="text" value="${q.question.replace(/"/g, '&quot;')}" placeholder="e.g. Describe your experience with carbon accounting tools"
+            class="q-text w-full bg-transparent border-b border-[#1a1a22] pb-2 text-[13px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+        </div>
+        <label class="flex items-center gap-2 shrink-0 cursor-pointer mt-1">
+          <input type="checkbox" class="q-required accent-[#00e5ff]" ${q.required ? 'checked' : ''} />
+          <span class="text-[11px] font-display text-[#444] uppercase tracking-wide">Required</span>
+        </label>
+        <button type="button" class="q-remove text-[#333] hover:text-[#ff6b35] transition-colors shrink-0 mt-1 text-[18px] leading-none">×</button>
+      </div>
+    `).join('');
+
+    listEl.querySelectorAll('[data-q-index]').forEach(card => {
+      const idx = parseInt((card as HTMLElement).dataset.qIndex!);
+      card.querySelector<HTMLInputElement>('.q-text')!.addEventListener('input', e => {
+        questions[idx].question = (e.target as HTMLInputElement).value;
+      });
+      card.querySelector<HTMLInputElement>('.q-required')!.addEventListener('change', e => {
+        questions[idx].required = (e.target as HTMLInputElement).checked;
+      });
+      card.querySelector('.q-remove')!.addEventListener('click', () => {
+        questions.splice(idx, 1);
+        renderQuestions();
+      });
+    });
+  }
 
   async function init() {
     const meRes = await fetch('/api/auth/me', { credentials: 'include' });
@@ -165,6 +219,14 @@ const SKILLS = [
 
     document.getElementById('loading')!.classList.add('hidden');
     document.getElementById('form-content')!.classList.remove('hidden');
+
+    document.getElementById('add-question-btn')!.addEventListener('click', () => {
+      questions.push({ id: crypto.randomUUID(), question: '', required: false });
+      renderQuestions();
+      // Focus the new input
+      const inputs = document.querySelectorAll<HTMLInputElement>('.q-text');
+      if (inputs.length) inputs[inputs.length - 1].focus();
+    });
 
     const selectedSkills = new Set<string>();
     const skillsCount = document.getElementById('skills-count')!;
@@ -218,6 +280,9 @@ const SKILLS = [
       const tagsRaw = (document.getElementById('tags') as HTMLInputElement).value;
       const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
 
+      // Filter out blank questions
+      const validQuestions = questions.filter(q => q.question.trim());
+
       const res = await fetch('/api/jobs', {
         method: 'POST',
         credentials: 'include',
@@ -234,6 +299,7 @@ const SKILLS = [
           skills: Array.from(selectedSkills),
           salary: (document.getElementById('salary') as HTMLInputElement).value || undefined,
           apply_url: (document.getElementById('apply-url') as HTMLInputElement).value || undefined,
+          questions: validQuestions,
         }),
       });
 

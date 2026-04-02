@@ -15,7 +15,11 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
      ORDER BY j.created_at DESC`
   ).all();
 
-  const jobs = results.map((r: any) => ({ ...r, tags: JSON.parse(r.tags ?? '[]'), skills: JSON.parse(r.skills ?? '[]') }));
+  const jobs = results.map((r: any) => ({
+    ...r,
+    tags: JSON.parse(r.tags ?? '[]'),
+    skills: JSON.parse(r.skills ?? '[]'),
+  }));
   return json(jobs);
 };
 
@@ -28,10 +32,12 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   const body = await request.json<{
     title: string; company: string; location: string; remote: boolean;
-    type: string; category: string; description: string; tags: string[]; skills: string[]; salary?: string; apply_url?: string;
+    type: string; category: string; description: string; tags: string[]; skills: string[];
+    salary?: string; apply_url?: string;
+    questions?: Array<{ id: string; question: string; required: boolean }>;
   }>();
 
-  const { title, company, location, remote, type, category, description, tags, skills, salary, apply_url } = body;
+  const { title, company, location, remote, type, category, description, tags, skills, salary, apply_url, questions } = body;
   if (!title || !company || !type || !category) return err('Missing required fields');
 
   const validTypes = ['Full-time', 'Part-time', 'Contract', 'Internship'];
@@ -41,8 +47,17 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   const id = crypto.randomUUID();
   await env.DB.prepare(
-    'INSERT INTO jobs (id, employer_id, title, company, location, remote, type, category, description, tags, skills, salary, apply_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-  ).bind(id, payload.sub, title, company, location ?? '', remote ? 1 : 0, type, category, description ?? '', JSON.stringify(tags ?? []), JSON.stringify(skills ?? []), salary ?? null, apply_url ?? null).run();
+    `INSERT INTO jobs
+       (id, employer_id, title, company, location, remote, type, category, description, tags, skills, questions, salary, apply_url)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(
+    id, payload.sub, title, company, location ?? '', remote ? 1 : 0,
+    type, category, description ?? '',
+    JSON.stringify(tags ?? []),
+    JSON.stringify(skills ?? []),
+    JSON.stringify((questions ?? []).filter(q => q.question?.trim())),
+    salary ?? null, apply_url ?? null
+  ).run();
 
   return json({ ok: true, id }, 201);
 };

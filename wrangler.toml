@@ -7,6 +7,11 @@ binding = "DB"
 database_name = "c22-jobs"
 database_id = "c9fc79ea-60e9-4f1f-ae0f-5a9345231fd2"
 
+[[r2_buckets]]
+binding = "UPLOADS"
+bucket_name = "c22-jobs-uploads"
+# Create bucket: wrangler r2 bucket create c22-jobs-uploads
+
 # JWT_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD are set as Wrangler secrets
 # Run: wrangler pages secret put JWT_SECRET --project-name c22-jobs
 #      wrangler pages secret put RESEND_API_KEY --project-name c22-jobs

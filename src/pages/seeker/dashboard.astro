@@ -18,14 +18,19 @@ import Footer from '../../components/Footer.astro';
       </div>
 
       <div id="dashboard" class="hidden">
-        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-12">
+        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10">
           <div>
             <div class="section-rule mb-4"></div>
             <span class="tag">My Applications</span>
             <h1 class="font-display font-bold text-[#f0f0f0] text-2xl tracking-tight mt-4">Your Applications</h1>
             <p id="user-email" class="text-[13px] text-[#444] mt-1"></p>
           </div>
-          <div class="flex gap-3">
+          <div class="flex flex-wrap gap-3">
+            <a href="/seeker/profile"
+              class="inline-flex items-center gap-2 px-5 py-3 text-[12px] font-display tracking-widest uppercase border border-[#1a1a22] text-[#555] hover:border-accent/50 hover:text-accent transition-all">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+              My Profile
+            </a>
             <a href="/"
               class="inline-flex items-center gap-2 px-5 py-3 text-[12px] font-display font-medium tracking-widest uppercase border border-[#1a1a22] text-[#666] hover:border-accent/50 hover:text-accent transition-all">
               Browse Jobs →
@@ -35,6 +40,30 @@ import Footer from '../../components/Footer.astro';
               Sign Out
             </button>
           </div>
+        </div>
+
+        <!-- Profile completion widget -->
+        <div id="strength-widget" class="hidden mb-10 border border-[#1a1a22] bg-[#080808] p-6">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-3">
+                <span class="text-[11px] font-display tracking-widest uppercase text-[#555]">Profile Strength</span>
+                <span id="sw-tier" class="text-[10px] font-display tracking-widest uppercase px-2 py-0.5 border border-[#1a1a22] text-[#555]">—</span>
+              </div>
+              <div class="h-1.5 bg-[#111] w-full max-w-[380px] overflow-hidden mb-2">
+                <div id="sw-fill" class="h-full w-0 transition-all duration-700 ease-out" style="background: linear-gradient(90deg, #00e5ff, #a855f7);"></div>
+              </div>
+              <div class="flex items-center gap-3">
+                <span id="sw-pct" class="text-[12px] font-display font-bold" style="color:#00e5ff">0%</span>
+                <span id="sw-missing" class="text-[12px] text-[#444]"></span>
+              </div>
+            </div>
+            <a href="/seeker/profile"
+              class="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 text-[11px] font-display tracking-widest uppercase border border-[#1a1a22] text-[#555] hover:border-accent/50 hover:text-accent transition-all whitespace-nowrap">
+              Complete Profile →
+            </a>
+          </div>
+          <div id="sw-checklist" class="mt-4 pt-4 border-t border-[#1a1a22] flex flex-wrap gap-2"></div>
         </div>
 
         <div id="no-apps" class="hidden text-center py-16 border border-dashed border-[#1a1a22]">
@@ -52,11 +81,67 @@ import Footer from '../../components/Footer.astro';
 
 <script>
   const STATUS_COLORS: Record<string, string> = {
-    pending: 'border-[#1a1a22] text-[#555]',
-    reviewed: 'border-yellow-800/40 text-yellow-600',
-    accepted: 'border-emerald-800/40 text-emerald-600',
-    rejected: 'border-red-900/40 text-red-700',
+    pending:     'border-[#1a1a22] text-[#555]',
+    reviewed:    'border-yellow-800/40 text-yellow-600',
+    shortlisted: 'border-blue-800/40 text-blue-500',
+    accepted:    'border-emerald-800/40 text-emerald-600',
+    rejected:    'border-red-900/40 text-red-700',
   };
+
+  const SEEKER_FIELDS = [
+    { key: 'avatar',           label: 'Profile photo',      pts: 15 },
+    { key: 'full_name',        label: 'Full name',           pts: 10 },
+    { key: 'bio',              label: 'Short bio',           pts: 15 },
+    { key: 'location',         label: 'Location',            pts: 10 },
+    { key: 'years_experience', label: 'Experience level',   pts: 10 },
+    { key: 'skills',           label: 'Skills',              pts: 15 },
+    { key: 'linkedin_url',     label: 'LinkedIn',            pts: 10 },
+    { key: 'resume_url',       label: 'Resume link',         pts: 10 },
+    { key: 'portfolio_url',    label: 'Portfolio',           pts:  5 },
+  ];
+
+  function renderStrengthWidget(p: any) {
+    const score = SEEKER_FIELDS.reduce((s, f) => {
+      const v = p[f.key];
+      return s + (f.key === 'skills' ? (Array.isArray(v) && v.length > 0 ? f.pts : 0) : (v ? f.pts : 0));
+    }, 0);
+
+    if (score >= 100) return;
+
+    const widget = document.getElementById('strength-widget')!;
+    widget.classList.remove('hidden');
+
+    const tierMap = [
+      { min: 75, label: 'Pro',      color: '#34d399', border: 'border-emerald-800/40' },
+      { min: 50, label: 'Advanced', color: '#60a5fa', border: 'border-blue-800/40' },
+      { min: 25, label: 'Rising',   color: '#fbbf24', border: 'border-amber-800/30' },
+      { min: 0,  label: 'Starter',  color: '#555',    border: 'border-[#1a1a22]' },
+    ];
+    const tier = tierMap.find(t => score >= t.min)!;
+
+    setTimeout(() => { (document.getElementById('sw-fill') as HTMLElement).style.width = `${score}%`; }, 80);
+
+    const pctEl  = document.getElementById('sw-pct')!;
+    const tierEl = document.getElementById('sw-tier')!;
+    pctEl.textContent  = `${score}%`;
+    pctEl.style.color  = tier.color;
+    tierEl.textContent = tier.label;
+    tierEl.style.color = tier.color;
+    tierEl.className   = `text-[10px] font-display tracking-widest uppercase px-2 py-0.5 border ${tier.border}`;
+
+    const missing = SEEKER_FIELDS.filter(f => {
+      const v = p[f.key];
+      return f.key === 'skills' ? !(Array.isArray(v) && v.length > 0) : !v;
+    });
+    document.getElementById('sw-missing')!.textContent =
+      missing.length ? `Employers are more likely to respond to complete profiles` : '';
+
+    document.getElementById('sw-checklist')!.innerHTML = missing.slice(0, 4).map(f =>
+      `<a href="/seeker/profile" class="inline-flex items-center gap-1.5 text-[11px] font-display tracking-wide px-2.5 py-1 border border-[#1a1a22] text-[#444] hover:border-accent/40 hover:text-accent transition-all">
+        <span style="color:#fbbf24">+${f.pts}</span> ${f.label}
+      </a>`
+    ).join('');
+  }
 
   async function init() {
     const meRes = await fetch('/api/auth/me', { credentials: 'include' });
@@ -68,17 +153,22 @@ import Footer from '../../components/Footer.astro';
     document.getElementById('dashboard')!.classList.remove('hidden');
     document.getElementById('user-email')!.textContent = me.email;
 
-    const res = await fetch('/api/seeker/applications', { credentials: 'include' });
-    const apps = await res.json() as any[];
+    const [appsRes, profileRes] = await Promise.all([
+      fetch('/api/seeker/applications', { credentials: 'include' }),
+      fetch('/api/profile', { credentials: 'include' }),
+    ]);
 
+    if (profileRes.ok) renderStrengthWidget(await profileRes.json());
+
+    const apps = appsRes.ok ? await appsRes.json() as any[] : [];
     const listEl = document.getElementById('apps-list')!;
 
     if (apps.length === 0) {
       document.getElementById('no-apps')!.classList.remove('hidden');
     } else {
       listEl.innerHTML = apps.map(a => `
-        <a href="/view?id=${a.job_id}" class="group block border border-[#1a1a22] hover:border-[#2a2a2a] bg-[#080808] hover:bg-[#0c0c0c] transition-all duration-300 relative overflow-hidden">
-          <div class="p-7">
+        <div class="group border border-[#1a1a22] hover:border-[#2a2a2a] bg-[#080808] hover:bg-[#0c0c0c] transition-all duration-300 relative overflow-hidden">
+          <a href="/view?id=${a.job_id}" class="block p-7">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div class="flex-1">
                 <div class="flex flex-wrap items-center gap-2 mb-2">
@@ -95,9 +185,16 @@ import Footer from '../../components/Footer.astro';
                 </span>
               </div>
             </div>
+          </a>
+          <div class="border-t border-[#1a1a22] px-7 py-3 flex items-center gap-4">
+            <a href="/inbox?application_id=${a.id}"
+              class="inline-flex items-center gap-1.5 text-[11px] font-display tracking-wide text-[#444] hover:text-accent transition-colors uppercase">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              Messages
+            </a>
           </div>
           <div class="absolute bottom-0 left-0 right-0 h-px bg-accent scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
-        </a>
+        </div>
       `).join('');
     }
 

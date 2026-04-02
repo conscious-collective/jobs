@@ -31,27 +31,105 @@ import Footer from '../components/Footer.astro';
         <p id="job-meta" class="text-[13px] text-[#555] mb-10"></p>
 
         <form id="apply-form" class="space-y-7">
-          <div>
-            <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Cover Letter <span class="text-[#333]">(optional)</span></label>
-            <textarea id="cover-letter" rows="6" placeholder="Tell them why you're the right fit for this role..."
-              class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors resize-none"></textarea>
+
+          <!-- Required contact fields -->
+          <div class="pb-6 border-b border-[#1a1a22]">
+            <p class="text-[10px] font-display tracking-widest uppercase text-[#333] mb-5">Contact Details</p>
+
+            <div class="space-y-7">
+              <div>
+                <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">
+                  Full Name <span class="text-[#ff6b35]">*</span>
+                </label>
+                <input type="text" id="full-name" required placeholder="Jane Smith"
+                  class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">
+                  Email <span class="text-[#ff6b35]">*</span>
+                </label>
+                <input type="email" id="email" readonly
+                  class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#888] focus:outline-none cursor-default" />
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">
+                  Phone Number <span class="text-[#ff6b35]">*</span>
+                </label>
+                <input type="tel" id="phone" required placeholder="+44 7700 000000"
+                  class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">
+                  Resume Link <span class="text-[#ff6b35]">*</span>
+                </label>
+                <input type="url" id="resume-url" required placeholder="Google Drive, Dropbox, or LinkedIn PDF link"
+                  class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+                <p class="text-[11px] text-[#333] mt-1.5">Paste a shareable link to your resume (Google Drive, Dropbox, etc.)</p>
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">LinkedIn Profile <span class="text-[#333]">(optional)</span></label>
-            <input type="url" id="linkedin" placeholder="https://linkedin.com/in/you"
-              class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+          <!-- Application fields -->
+          <div class="space-y-7">
+            <div>
+              <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Cover Letter <span class="text-[#333]">(optional)</span></label>
+              <textarea id="cover-letter" rows="6" placeholder="Tell them why you're the right fit for this role..."
+                class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors resize-none"></textarea>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">What interests you about joining this company? <span class="text-[#333]">(optional)</span></label>
+              <textarea id="interest-statement" rows="4" placeholder="What excites you about this company's mission and culture..."
+                class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors resize-none"></textarea>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">LinkedIn Profile <span class="text-[#333]">(optional)</span></label>
+              <input type="url" id="linkedin" placeholder="https://linkedin.com/in/you"
+                class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Portfolio / Website <span class="text-[#333]">(optional)</span></label>
+              <input type="url" id="portfolio" placeholder="https://yoursite.com"
+                class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+            </div>
           </div>
 
-          <div>
-            <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Portfolio / Website <span class="text-[#333]">(optional)</span></label>
-            <input type="url" id="portfolio" placeholder="https://yoursite.com"
-              class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+          <!-- Dynamic qualifying questions rendered by JS -->
+          <div id="questions-section" class="hidden space-y-7">
+            <div class="section-rule"></div>
+            <p class="text-[10px] font-display tracking-widest uppercase text-[#333]">Employer Questions</p>
+            <div id="questions-list" class="space-y-7"></div>
           </div>
 
           <div id="apply-error" class="hidden text-[13px] text-[#ff6b35]"></div>
-          <div id="apply-success" class="hidden text-[13px] text-accent p-4 border border-accent/20 bg-accent/5">
-            Application submitted! You can track its status in your <a href="/seeker/dashboard" class="underline">dashboard</a>.
+          <div id="apply-success" class="hidden space-y-4">
+            <div class="text-[13px] text-accent p-4 border border-accent/20 bg-accent/5">
+              Application submitted! Track its status in your <a href="/seeker/dashboard" class="underline">dashboard</a>.
+            </div>
+            <div id="profile-nudge" class="hidden border border-[#1a1a22] bg-[#080808] p-5">
+              <div class="flex items-center justify-between gap-4 mb-3">
+                <div>
+                  <p class="text-[12px] font-display tracking-widest uppercase text-[#555] mb-1">Your Profile Strength</p>
+                  <div class="flex items-center gap-2">
+                    <span id="nudge-pct" class="text-[20px] font-display font-bold" style="color:#fbbf24">0%</span>
+                    <span id="nudge-tier" class="text-[10px] font-display tracking-widest uppercase px-2 py-0.5 border border-amber-800/30 text-amber-500">Rising</span>
+                  </div>
+                </div>
+                <a href="/seeker/profile"
+                  class="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 text-[11px] font-display tracking-widest uppercase border border-[#1a1a22] text-[#555] hover:border-accent/50 hover:text-accent transition-all">
+                  Complete Profile →
+                </a>
+              </div>
+              <div class="h-1 bg-[#111] w-full overflow-hidden mb-2">
+                <div id="nudge-fill" class="h-full w-0 transition-all duration-700 ease-out" style="background: linear-gradient(90deg,#fbbf24,#f97316);"></div>
+              </div>
+              <p id="nudge-tip" class="text-[12px] text-[#444]"></p>
+            </div>
           </div>
 
           <button type="submit" id="apply-btn"
@@ -73,6 +151,8 @@ import Footer from '../components/Footer.astro';
   const params = new URLSearchParams(window.location.search);
   const jobId = params.get('id');
 
+  interface Question { id: string; question: string; required: boolean; }
+
   async function init() {
     if (!jobId) { window.location.href = '/'; return; }
 
@@ -81,21 +161,52 @@ import Footer from '../components/Footer.astro';
       window.location.href = `/auth?mode=signup&role=seeker&redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
       return;
     }
-    const me = await meRes.json() as { role: string };
-    if (me.role !== 'seeker') {
-      window.location.href = '/';
-      return;
-    }
+    const me = await meRes.json() as { role: string; email: string };
+    if (me.role !== 'seeker') { window.location.href = '/'; return; }
 
-    const jobRes = await fetch(`/api/jobs/${jobId}`, { credentials: 'include' });
+    // Fetch job and profile in parallel
+    const [jobRes, profileRes] = await Promise.all([
+      fetch(`/api/jobs/${jobId}`, { credentials: 'include' }),
+      fetch('/api/profile', { credentials: 'include' }),
+    ]);
+
     if (!jobRes.ok) { window.location.href = '/'; return; }
     const job = await jobRes.json() as any;
+    const profile = profileRes.ok ? await profileRes.json() as any : {};
 
     document.getElementById('checking')!.classList.add('hidden');
     document.getElementById('apply-content')!.classList.remove('hidden');
     document.getElementById('job-title-display')!.textContent = job.title;
     document.getElementById('job-meta')!.textContent = `${job.company}${job.location ? ' · ' + job.location : ''}`;
     (document.getElementById('back-link') as HTMLAnchorElement).href = `/view?id=${jobId}`;
+
+    // Pre-fill from profile
+    (document.getElementById('email') as HTMLInputElement).value = me.email;
+    if (profile.full_name) (document.getElementById('full-name') as HTMLInputElement).value = profile.full_name;
+    if (profile.phone) (document.getElementById('phone') as HTMLInputElement).value = profile.phone;
+    if (profile.resume_url) (document.getElementById('resume-url') as HTMLInputElement).value = profile.resume_url;
+
+    // Render qualifying questions
+    const questions: Question[] = job.questions ?? [];
+    if (questions.length > 0) {
+      document.getElementById('questions-section')!.classList.remove('hidden');
+      const listEl = document.getElementById('questions-list')!;
+      listEl.innerHTML = questions.map((q: Question) => `
+        <div>
+          <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">
+            ${q.question}
+            ${q.required ? '<span style="color:#ff6b35">*</span>' : '<span style="color:#333">(optional)</span>'}
+          </label>
+          <textarea
+            data-question-id="${q.id}"
+            data-required="${q.required}"
+            rows="3"
+            placeholder="Your answer…"
+            ${q.required ? 'required' : ''}
+            class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors resize-none question-answer"></textarea>
+        </div>
+      `).join('');
+    }
 
     document.getElementById('apply-form')!.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -105,15 +216,26 @@ import Footer from '../components/Footer.astro';
       btn.disabled = true; btn.textContent = 'Submitting…';
       errEl.classList.add('hidden');
 
+      // Collect question answers
+      const answers: Array<{ question_id: string; answer: string }> = [];
+      document.querySelectorAll<HTMLTextAreaElement>('.question-answer').forEach(ta => {
+        answers.push({ question_id: ta.dataset.questionId!, answer: ta.value });
+      });
+
       const res = await fetch('/api/applications', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           job_id: jobId,
+          full_name: (document.getElementById('full-name') as HTMLInputElement).value,
+          phone: (document.getElementById('phone') as HTMLInputElement).value,
+          resume_url: (document.getElementById('resume-url') as HTMLInputElement).value,
           cover_letter: (document.getElementById('cover-letter') as HTMLTextAreaElement).value || undefined,
+          interest_statement: (document.getElementById('interest-statement') as HTMLTextAreaElement).value || undefined,
           linkedin_url: (document.getElementById('linkedin') as HTMLInputElement).value || undefined,
           portfolio_url: (document.getElementById('portfolio') as HTMLInputElement).value || undefined,
+          answers: answers.filter(a => a.answer),
         }),
       });
 
@@ -122,12 +244,58 @@ import Footer from '../components/Footer.astro';
         successEl.classList.remove('hidden');
         (document.getElementById('apply-form') as HTMLFormElement).reset();
         btn.textContent = 'Submitted ✓';
+        // Show profile nudge if profile is incomplete
+        showProfileNudge();
       } else {
         errEl.textContent = data.error ?? 'Something went wrong.';
         errEl.classList.remove('hidden');
         btn.disabled = false; btn.textContent = 'Submit Application';
       }
     });
+  }
+
+  async function showProfileNudge() {
+    const FIELDS = [
+      { key: 'avatar', pts: 15 }, { key: 'full_name', pts: 10 }, { key: 'bio', pts: 15 },
+      { key: 'location', pts: 10 }, { key: 'years_experience', pts: 10 },
+      { key: 'skills', pts: 15 }, { key: 'linkedin_url', pts: 10 },
+      { key: 'resume_url', pts: 10 }, { key: 'portfolio_url', pts: 5 },
+    ];
+    const pr = await fetch('/api/profile', { credentials: 'include' });
+    if (!pr.ok) return;
+    const p = await pr.json() as any;
+    const score = FIELDS.reduce((s, f) => {
+      const v = p[f.key];
+      return s + (f.key === 'skills' ? (Array.isArray(v) && v.length > 0 ? f.pts : 0) : (v ? f.pts : 0));
+    }, 0);
+    if (score >= 100) return;
+
+    const tierMap = [
+      { min: 75, label: 'Pro',      color: '#34d399', grad: '#34d399,#059669' },
+      { min: 50, label: 'Advanced', color: '#60a5fa', grad: '#60a5fa,#3b82f6' },
+      { min: 25, label: 'Rising',   color: '#fbbf24', grad: '#fbbf24,#f97316' },
+      { min: 0,  label: 'Starter',  color: '#555',    grad: '#555,#333' },
+    ];
+    const tier = tierMap.find(t => score >= t.min)!;
+    const missing = FIELDS.filter(f => { const v = p[f.key]; return f.key === 'skills' ? !(Array.isArray(v) && v.length > 0) : !v; });
+
+    const nudge = document.getElementById('profile-nudge')!;
+    const pctEl  = document.getElementById('nudge-pct')!;
+    const tierEl = document.getElementById('nudge-tier')!;
+    const fillEl = document.getElementById('nudge-fill')!;
+    const tipEl  = document.getElementById('nudge-tip')!;
+
+    pctEl.textContent  = `${score}%`;
+    pctEl.style.color  = tier.color;
+    tierEl.textContent = tier.label;
+    tierEl.style.color = tier.color;
+    (fillEl as HTMLElement).style.background = `linear-gradient(90deg, ${tier.grad})`;
+    tipEl.textContent  = missing.length
+      ? `Next: ${missing[0].pts} pts for adding your ${missing[0].key.replace(/_/g,' ')}. Employers notice complete profiles.`
+      : '';
+
+    nudge.classList.remove('hidden');
+    setTimeout(() => { fillEl.style.width = `${score}%`; }, 120);
   }
 
   init();

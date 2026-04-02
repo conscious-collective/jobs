@@ -1,0 +1,290 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+
+const SIZE_OPTIONS = [
+  { value: '1-10',    label: '1 – 10 employees' },
+  { value: '11-50',   label: '11 – 50 employees' },
+  { value: '51-200',  label: '51 – 200 employees' },
+  { value: '201-500', label: '201 – 500 employees' },
+  { value: '500+',    label: '500+ employees' },
+];
+---
+
+<BaseLayout
+  title="Company Profile | Sustainability Jobs"
+  description="Set up your company profile to attract better candidates."
+>
+  <Nav />
+
+  <main class="pt-28 pb-24">
+    <div class="max-w-[660px] mx-auto px-6">
+
+      <div id="loading" class="py-20 text-center text-[#444] font-display text-[13px] tracking-widest uppercase">Loading…</div>
+
+      <div id="content" class="hidden">
+        <a href="/employer/dashboard" class="inline-flex items-center gap-2 text-[12px] text-[#444] hover:text-accent transition-colors font-display tracking-wider uppercase mb-10">
+          <svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M13 7H1M1 7L7 1M1 7L7 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Dashboard
+        </a>
+
+        <div class="section-rule mb-4"></div>
+        <span class="tag">Company Profile</span>
+        <h1 class="font-display font-bold text-[#f0f0f0] text-2xl tracking-tight mt-4 mb-2">Your Company</h1>
+        <p class="text-[13px] text-[#555] mb-10">This information appears on all your job listings and attracts better-fit candidates.</p>
+
+        <!-- Profile strength -->
+        <div class="mb-10 border border-[#1a1a22] bg-[#080808] p-6">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[10px] font-display tracking-widest uppercase text-[#444]">Profile Strength</span>
+            <span id="strength-tier" class="text-[10px] font-display tracking-widest uppercase px-2 py-0.5 border border-[#1a1a22] text-[#555]">—</span>
+          </div>
+          <div class="h-1.5 bg-[#111] w-full overflow-hidden">
+            <div id="strength-fill" class="h-full w-0 transition-all duration-700 ease-out" style="background: linear-gradient(90deg, #00e5ff, #a855f7);"></div>
+          </div>
+          <div class="flex items-center justify-between mt-2">
+            <span id="strength-pct" class="text-[12px] font-display text-[#555]">0%</span>
+            <span id="strength-next" class="text-[11px] text-[#333]"></span>
+          </div>
+        </div>
+
+        <div class="space-y-10">
+
+          <!-- Logo -->
+          <div>
+            <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-4">Company Logo</label>
+            <div class="flex items-start gap-6">
+              <div id="logo-preview-wrap" class="w-20 h-20 border border-[#1a1a22] flex items-center justify-center shrink-0 overflow-hidden bg-[#0d0d10]">
+                <img id="logo-preview" src="" alt="" class="hidden w-full h-full object-contain p-1" />
+                <svg id="logo-placeholder" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              </div>
+              <div class="flex-1">
+                <label id="upload-label" for="logo-input"
+                  class="inline-flex items-center gap-2 cursor-pointer px-4 py-2.5 text-[11px] font-display tracking-widest uppercase border border-[#1a1a22] text-[#555] hover:border-accent/50 hover:text-accent transition-all">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <span id="upload-label-text">Upload Logo</span>
+                </label>
+                <input type="file" id="logo-input" accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml" class="hidden" />
+                <p class="text-[11px] text-[#333] mt-2">JPG, PNG, WebP, SVG or GIF · Max 2 MB</p>
+                <p id="upload-status" class="text-[12px] mt-2 hidden"></p>
+                <button id="remove-logo-btn" type="button" class="hidden mt-2 text-[11px] font-display tracking-wide text-[#444] hover:text-[#ff6b35] transition-colors uppercase">Remove logo</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div>
+            <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Company Description <span class="text-[#333]">(optional)</span></label>
+            <textarea id="company-description" rows="5"
+              placeholder="Your mission, culture, impact focus, and why people love working here."
+              class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors resize-none"></textarea>
+            <p id="desc-count" class="text-[11px] text-[#333] mt-1.5">0 / 500</p>
+          </div>
+
+          <!-- Company name, website, size, HQ -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-7">
+            <div>
+              <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Company Name</label>
+              <input type="text" id="company-name" placeholder="Acme Climate Co."
+                class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Company Website</label>
+              <input type="url" id="company-website" placeholder="https://yourcompany.com"
+                class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-7">
+            <div>
+              <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Team Size</label>
+              <select id="company-size"
+                class="w-full bg-[#060608] border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] focus:outline-none focus:border-accent transition-colors appearance-none">
+                <option value="">Select…</option>
+                {SIZE_OPTIONS.map(o => <option value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Headquarters</label>
+              <input type="text" id="company-hq" placeholder="London, UK"
+                class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+            </div>
+          </div>
+
+          <div id="save-error" class="hidden text-[13px] text-[#ff6b35]"></div>
+          <div id="save-success" class="hidden text-[13px] text-accent p-4 border border-accent/20 bg-accent/5">Profile saved.</div>
+
+          <button type="button" id="save-btn"
+            class="inline-flex items-center gap-2 px-7 py-4 text-[13px] font-display font-medium tracking-widest uppercase bg-accent text-[#080808] hover:bg-white transition-colors duration-200 disabled:opacity-40"
+            style="clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);">
+            Save Profile →
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<script>
+  const EMP_FIELDS = [
+    { key: 'company_logo',        label: 'Upload a company logo',       pts: 20 },
+    { key: 'company_description', label: 'Write a company description', pts: 25 },
+    { key: 'company_name',        label: 'Add your company name',       pts: 15 },
+    { key: 'company_website',     label: 'Add your website',            pts: 15 },
+    { key: 'company_size',        label: 'Set team size',               pts: 15 },
+    { key: 'company_hq',          label: 'Add headquarters location',   pts: 10 },
+  ];
+
+  function calcStrength(p: any) {
+    return EMP_FIELDS.reduce((s, f) => s + (p[f.key] ? f.pts : 0), 0);
+  }
+
+  function tierInfo(score: number) {
+    if (score >= 100) return { label: 'Complete', color: '#00e5ff', border: 'border-accent/40' };
+    if (score >= 75)  return { label: 'Pro',      color: '#34d399', border: 'border-emerald-800/40' };
+    if (score >= 50)  return { label: 'Advanced', color: '#60a5fa', border: 'border-blue-800/40' };
+    if (score >= 25)  return { label: 'Rising',   color: '#fbbf24', border: 'border-amber-800/30' };
+    return               { label: 'Starter',  color: '#555',    border: 'border-[#1a1a22]' };
+  }
+
+  function renderStrength(p: any) {
+    const score = calcStrength(p);
+    const tier  = tierInfo(score);
+    setTimeout(() => { (document.getElementById('strength-fill') as HTMLElement).style.width = `${score}%`; }, 80);
+    const pctEl  = document.getElementById('strength-pct')!;
+    const tierEl = document.getElementById('strength-tier')!;
+    const nextEl = document.getElementById('strength-next')!;
+    pctEl.textContent  = `${score}%`;
+    pctEl.style.color  = tier.color;
+    tierEl.textContent = tier.label;
+    tierEl.style.color = tier.color;
+    tierEl.className   = `text-[10px] font-display tracking-widest uppercase px-2 py-0.5 border ${tier.border}`;
+    const missing = EMP_FIELDS.filter(f => !p[f.key]);
+    nextEl.textContent = missing.length ? `+${missing[0].pts} pts next` : '';
+  }
+
+  let pendingLogoUrl: string | null = null;
+
+  async function init() {
+    const meRes = await fetch('/api/auth/me', { credentials: 'include' });
+    if (!meRes.ok) { window.location.href = '/auth?mode=signin'; return; }
+    const me = await meRes.json() as { role: string };
+    if (me.role !== 'employer') { window.location.href = '/'; return; }
+
+    const profileRes = await fetch('/api/profile', { credentials: 'include' });
+    if (!profileRes.ok) { window.location.href = '/employer/dashboard'; return; }
+    const p = await profileRes.json() as any;
+
+    document.getElementById('loading')!.classList.add('hidden');
+    document.getElementById('content')!.classList.remove('hidden');
+
+    if (p.company_name)        (document.getElementById('company-name') as HTMLInputElement).value = p.company_name;
+    if (p.company_website)     (document.getElementById('company-website') as HTMLInputElement).value = p.company_website;
+    if (p.company_size)        (document.getElementById('company-size') as HTMLSelectElement).value = p.company_size;
+    if (p.company_hq)          (document.getElementById('company-hq') as HTMLInputElement).value = p.company_hq;
+    if (p.company_description) {
+      const ta = document.getElementById('company-description') as HTMLTextAreaElement;
+      ta.value = p.company_description;
+      updateDescCount(ta.value);
+    }
+    if (p.company_logo) { showLogoPreview(p.company_logo); pendingLogoUrl = p.company_logo; }
+
+    document.getElementById('company-description')!.addEventListener('input', (e) =>
+      updateDescCount((e.target as HTMLTextAreaElement).value));
+
+    const logoInput = document.getElementById('logo-input') as HTMLInputElement;
+    logoInput.addEventListener('change', async () => {
+      if (logoInput.files?.[0]) await uploadLogo(logoInput.files[0]);
+    });
+    document.getElementById('remove-logo-btn')!.addEventListener('click', () => { pendingLogoUrl = ''; hideLogo(); });
+    document.getElementById('save-btn')!.addEventListener('click', saveProfile);
+
+    renderStrength(p);
+  }
+
+  function updateDescCount(val: string) {
+    const el = document.getElementById('desc-count')!;
+    el.textContent = `${val.length} / 500`;
+    el.style.color = val.length > 500 ? '#ff6b35' : '';
+  }
+
+  function showLogoPreview(url: string) {
+    const img = document.getElementById('logo-preview') as HTMLImageElement;
+    img.src = url; img.classList.remove('hidden');
+    document.getElementById('logo-placeholder')!.classList.add('hidden');
+    (document.getElementById('upload-label-text') as HTMLElement).textContent = 'Change Logo';
+    document.getElementById('remove-logo-btn')!.classList.remove('hidden');
+  }
+
+  function hideLogo() {
+    const img = document.getElementById('logo-preview') as HTMLImageElement;
+    img.src = ''; img.classList.add('hidden');
+    document.getElementById('logo-placeholder')!.classList.remove('hidden');
+    (document.getElementById('upload-label-text') as HTMLElement).textContent = 'Upload Logo';
+    document.getElementById('remove-logo-btn')!.classList.add('hidden');
+  }
+
+  async function uploadLogo(file: File) {
+    const statusEl = document.getElementById('upload-status')!;
+    const labelEl  = document.getElementById('upload-label') as HTMLLabelElement;
+    statusEl.textContent = 'Uploading…'; statusEl.style.color = '#888'; statusEl.classList.remove('hidden');
+    labelEl.style.pointerEvents = 'none'; labelEl.style.opacity = '0.5';
+    try {
+      const fd = new FormData(); fd.append('file', file);
+      const res  = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: fd });
+      const data = await res.json() as any;
+      if (res.ok) {
+        pendingLogoUrl = data.url; showLogoPreview(data.url);
+        statusEl.textContent = 'Logo ready — click Save Profile.'; statusEl.style.color = '#00e5ff';
+      } else {
+        statusEl.textContent = data.error ?? 'Upload failed.'; statusEl.style.color = '#ff6b35';
+      }
+    } catch { statusEl.textContent = 'Upload failed.'; statusEl.style.color = '#ff6b35'; }
+    finally  { labelEl.style.pointerEvents = ''; labelEl.style.opacity = ''; }
+  }
+
+  async function saveProfile() {
+    const btn = document.getElementById('save-btn') as HTMLButtonElement;
+    const errEl = document.getElementById('save-error')!;
+    const successEl = document.getElementById('save-success')!;
+    errEl.classList.add('hidden'); successEl.classList.add('hidden');
+    btn.disabled = true; btn.textContent = 'Saving…';
+
+    const desc = (document.getElementById('company-description') as HTMLTextAreaElement).value;
+    if (desc.length > 500) {
+      errEl.textContent = 'Description must be 500 characters or fewer.';
+      errEl.classList.remove('hidden'); btn.disabled = false; btn.textContent = 'Save Profile →'; return;
+    }
+
+    const body: Record<string, string | null> = {
+      company_name:        (document.getElementById('company-name') as HTMLInputElement).value.trim() || null,
+      company_website:     (document.getElementById('company-website') as HTMLInputElement).value.trim() || null,
+      company_description: desc || null,
+      company_size:        (document.getElementById('company-size') as HTMLSelectElement).value || null,
+      company_hq:          (document.getElementById('company-hq') as HTMLInputElement).value.trim() || null,
+    };
+    if (pendingLogoUrl !== null) body.company_logo = pendingLogoUrl || null;
+
+    const res = await fetch('/api/profile', {
+      method: 'PATCH', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+    if (res.ok) {
+      successEl.classList.remove('hidden');
+      document.getElementById('upload-status')!.classList.add('hidden');
+      const pr = await fetch('/api/profile', { credentials: 'include' });
+      if (pr.ok) renderStrength(await pr.json());
+    } else {
+      const data = await res.json() as any;
+      errEl.textContent = data.error ?? 'Failed to save.'; errEl.classList.remove('hidden');
+    }
+    btn.disabled = false; btn.textContent = 'Save Profile →';
+  }
+
+  init();
+</script>

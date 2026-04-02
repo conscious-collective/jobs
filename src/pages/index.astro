@@ -5,13 +5,12 @@ import Footer from '../components/Footer.astro';
 ---
 
 <BaseLayout
-  title="C22 Jobs: Free Sustainability Job Board"
+  title="Sustainability Jobs: Free Sustainability Job Board"
   description="Find and post sustainability jobs in clean energy, climate tech, ESG, environmental science, green finance, and more. Free forever."
 >
   <Nav />
 
   <main>
-    <!-- Hero -->
     <section class="relative pt-32 pb-16 overflow-hidden">
       <div class="absolute inset-0 pointer-events-none" aria-hidden="true">
         <div class="absolute inset-0" style="background-image: linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px); background-size: 80px 80px;"></div>
@@ -22,7 +21,7 @@ import Footer from '../components/Footer.astro';
         <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
           <div>
             <div class="section-rule mb-4"></div>
-            <span class="tag">C22 Jobs</span>
+            <span class="tag">Sustainability Jobs</span>
             <h1 class="font-display font-bold text-[#f0f0f0] leading-tight tracking-tight mt-4" style="font-size: clamp(2rem, 5vw, 3.5rem);">
               Work that matters.<br />
               <span class="text-[#555]">For the planet.</span>
@@ -37,8 +36,7 @@ import Footer from '../components/Footer.astro';
               style="clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);">
               Post a Job →
             </a>
-            <a href="/auth?mode=signin"
-              id="nav-signin"
+            <a href="/auth?mode=signin" id="nav-signin"
               class="inline-flex items-center gap-2 px-5 py-3 text-[12px] font-display font-medium tracking-widest uppercase border border-[#1a1a22] text-[#888] hover:border-accent/50 hover:text-accent transition-all duration-200">
               Sign In
             </a>
@@ -47,63 +45,50 @@ import Footer from '../components/Footer.astro';
 
         <!-- Filters -->
         <div class="flex flex-col gap-4 mb-10">
-          <!-- Search -->
-          <input
-            id="search"
-            type="text"
-            placeholder="Search roles, companies, keywords…"
-            class="w-full bg-transparent border border-[#1a1a22] px-5 py-3 text-[14px] text-[#f0f0f0] placeholder-[#333] focus:outline-none focus:border-accent/50 transition-colors font-display"
-          />
+          <div class="flex items-center gap-3">
+            <input id="search" type="text" placeholder="Search roles, companies, keywords…"
+              class="flex-1 bg-transparent border border-[#1a1a22] px-5 py-3 text-[14px] text-[#f0f0f0] placeholder-[#333] focus:outline-none focus:border-accent/50 transition-colors font-display" />
+            <!-- Saved-filter indicator (only shown when logged in and filters are saved) -->
+            <div id="filter-saved-badge" class="hidden shrink-0 flex items-center gap-1.5 text-[10px] font-display tracking-widest uppercase text-accent/60 border border-accent/20 px-2.5 py-1.5">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Saved
+            </div>
+          </div>
 
-          <!-- Category tabs -->
           <div class="flex flex-wrap gap-2" id="cat-filters">
             {['All', 'Clean Energy', 'Climate Tech', 'ESG & Reporting', 'Environmental Science', 'Green Finance', 'Circular Economy'].map((cat, i) => (
-              <button
-                data-cat={cat}
-                class={`cat-btn text-[11px] font-display tracking-[0.12em] uppercase px-3 py-1.5 border transition-all duration-200 ${i === 0 ? 'border-accent text-accent' : 'border-[#1a1a22] text-[#555] hover:border-[#333] hover:text-[#888]'}`}
-              >
+              <button data-cat={cat}
+                class={`cat-btn text-[11px] font-display tracking-[0.12em] uppercase px-3 py-1.5 border transition-all duration-200 ${i === 0 ? 'border-accent text-accent' : 'border-[#1a1a22] text-[#555] hover:border-[#333] hover:text-[#888]'}`}>
                 {cat}
               </button>
             ))}
           </div>
 
-          <!-- Type + Remote filters -->
           <div class="flex flex-wrap gap-2">
             {['All Types', 'Full-time', 'Part-time', 'Contract', 'Internship'].map((t, i) => (
-              <button
-                data-type={t}
-                class={`type-btn text-[11px] font-display tracking-[0.12em] uppercase px-3 py-1.5 border transition-all duration-200 ${i === 0 ? 'border-accent/60 text-accent/60' : 'border-[#1a1a22] text-[#444] hover:border-[#2a2a2a] hover:text-[#666]'}`}
-              >
+              <button data-type={t}
+                class={`type-btn text-[11px] font-display tracking-[0.12em] uppercase px-3 py-1.5 border transition-all duration-200 ${i === 0 ? 'border-accent/60 text-accent/60' : 'border-[#1a1a22] text-[#444] hover:border-[#2a2a2a] hover:text-[#666]'}`}>
                 {t}
               </button>
             ))}
             <div class="w-px bg-[#1a1a22] mx-1"></div>
-            <button
-              id="remote-toggle"
-              class="text-[11px] font-display tracking-[0.12em] uppercase px-3 py-1.5 border border-[#1a1a22] text-[#444] hover:border-[#2a2a2a] hover:text-[#666] transition-all duration-200"
-            >
+            <button id="remote-toggle"
+              class="text-[11px] font-display tracking-[0.12em] uppercase px-3 py-1.5 border border-[#1a1a22] text-[#444] hover:border-[#2a2a2a] hover:text-[#666] transition-all duration-200">
               Remote Only
             </button>
           </div>
         </div>
 
-        <!-- Job list -->
-        <div id="jobs-loading" class="text-center py-20 text-[#444] font-display text-[13px] tracking-widest uppercase">
-          Loading jobs…
-        </div>
+        <div id="jobs-loading" class="text-center py-20 text-[#444] font-display text-[13px] tracking-widest uppercase">Loading jobs…</div>
         <div id="jobs-empty" class="hidden text-center py-20 border border-dashed border-[#1a1a22]">
           <p class="text-[14px] text-[#555]">No jobs match your filters.</p>
           <p class="text-[13px] text-[#333] mt-1">Try adjusting your search or <a href="/auth?mode=signup&role=employer" class="text-accent hover:text-white transition-colors">post one →</a></p>
         </div>
         <div id="jobs-list" class="space-y-px hidden"></div>
 
-        <!-- Post CTA -->
         <div class="mt-10 p-8 border border-dashed border-[#1a1a22] text-center">
           <p class="text-[14px] text-[#555] mb-1">Hiring in sustainability?</p>
-          <p class="text-[14px] text-[#888]">
-            Post your role for free.
-            <a href="/auth?mode=signup&role=employer" class="text-accent hover:text-white transition-colors ml-1">Post a Job →</a>
-          </p>
+          <p class="text-[14px] text-[#888]">Post your role for free. <a href="/auth?mode=signup&role=employer" class="text-accent hover:text-white transition-colors ml-1">Post a Job →</a></p>
         </div>
       </div>
     </section>
@@ -113,34 +98,36 @@ import Footer from '../components/Footer.astro';
 </BaseLayout>
 
 <script>
-  let allJobs: any[] = [];
-  let activeCat = 'All';
-  let activeType = 'All Types';
-  let remoteOnly = false;
-  let searchQuery = '';
+  let allJobs: any[]   = [];
+  let activeCat        = 'All';
+  let activeType       = 'All Types';
+  let remoteOnly       = false;
+  let searchQuery      = '';
+  let isLoggedIn       = false;
+  let saveTimer: ReturnType<typeof setTimeout> | null = null;
 
-  const listEl = document.getElementById('jobs-list')!;
+  const listEl    = document.getElementById('jobs-list')!;
   const loadingEl = document.getElementById('jobs-loading')!;
-  const emptyEl = document.getElementById('jobs-empty')!;
+  const emptyEl   = document.getElementById('jobs-empty')!;
+  const badge     = document.getElementById('filter-saved-badge')!;
+
+  // ── rendering ──────────────────────────────────────────────────────────────
 
   function timeAgo(dateStr: string) {
     const diff = Date.now() - new Date(dateStr).getTime();
     const days = Math.floor(diff / 86400000);
     if (days === 0) return 'Today';
     if (days === 1) return 'Yesterday';
-    if (days < 7) return `${days}d ago`;
+    if (days < 7)  return `${days}d ago`;
     if (days < 30) return `${Math.floor(days / 7)}w ago`;
     return `${Math.floor(days / 30)}mo ago`;
   }
 
   function renderJobs(jobs: any[]) {
     if (jobs.length === 0) {
-      listEl.classList.add('hidden');
-      emptyEl.classList.remove('hidden');
-      return;
+      listEl.classList.add('hidden'); emptyEl.classList.remove('hidden'); return;
     }
-    emptyEl.classList.add('hidden');
-    listEl.classList.remove('hidden');
+    emptyEl.classList.add('hidden'); listEl.classList.remove('hidden');
     listEl.innerHTML = jobs.map(j => `
       <a href="${j.apply_url ? j.apply_url : `/view?id=${j.id}`}" ${j.apply_url ? 'target="_blank" rel="noopener"' : ''} class="group block border border-[#1a1a22] hover:border-[#2a2a2a] bg-[#080808] hover:bg-[#0c0c0c] transition-all duration-300 relative overflow-hidden">
         <div class="p-7 md:p-8">
@@ -155,14 +142,8 @@ import Footer from '../components/Footer.astro';
               <h3 class="font-display font-bold text-[#f0f0f0] text-[17px] tracking-tight mb-1 group-hover:text-accent transition-colors duration-300">${j.title}</h3>
               <div class="text-[13px] text-[#666] mb-2">${j.company}${j.location ? ` · ${j.location}` : ''}${j.salary ? ` · <span class="text-[#888]">${j.salary}</span>` : ''}</div>
               <p class="text-[13px] text-[#555] leading-relaxed line-clamp-2">${j.description ?? ''}</p>
-              ${j.skills && j.skills.length ? `
-              <div class="flex flex-wrap gap-1.5 mt-3">
-                ${j.skills.map((s: string) => `<span class="text-[10px] px-2 py-0.5 border border-accent/15 text-accent/50 font-display tracking-wide">${s}</span>`).join('')}
-              </div>` : ''}
-              ${j.tags && j.tags.length ? `
-              <div class="flex flex-wrap gap-1.5 mt-2">
-                ${j.tags.map((t: string) => `<span class="text-[10px] px-2 py-0.5 border border-[#1a1a22] text-[#444] font-display tracking-wide">${t}</span>`).join('')}
-              </div>` : ''}
+              ${j.skills && j.skills.length ? `<div class="flex flex-wrap gap-1.5 mt-3">${j.skills.map((s: string) => `<span class="text-[10px] px-2 py-0.5 border border-accent/15 text-accent/50 font-display tracking-wide">${s}</span>`).join('')}</div>` : ''}
+              ${j.tags && j.tags.length ? `<div class="flex flex-wrap gap-1.5 mt-2">${j.tags.map((t: string) => `<span class="text-[10px] px-2 py-0.5 border border-[#1a1a22] text-[#444] font-display tracking-wide">${t}</span>`).join('')}</div>` : ''}
             </div>
             <span class="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 text-[11px] font-display tracking-widest uppercase border border-[#1a1a22] text-[#666] group-hover:border-accent group-hover:text-accent transition-all duration-200 self-start">
               ${j.apply_url ? 'Apply on Site' : 'View &amp; Apply'}
@@ -178,8 +159,8 @@ import Footer from '../components/Footer.astro';
   function filter() {
     const q = searchQuery.toLowerCase();
     const filtered = allJobs.filter(j => {
-      const matchCat = activeCat === 'All' || j.category === activeCat;
-      const matchType = activeType === 'All Types' || j.type === activeType;
+      const matchCat    = activeCat === 'All' || j.category === activeCat;
+      const matchType   = activeType === 'All Types' || j.type === activeType;
       const matchRemote = !remoteOnly || j.remote;
       const matchSearch = !q || j.title.toLowerCase().includes(q) || j.company.toLowerCase().includes(q) || (j.description ?? '').toLowerCase().includes(q);
       return matchCat && matchType && matchRemote && matchSearch;
@@ -187,56 +168,137 @@ import Footer from '../components/Footer.astro';
     renderJobs(filtered);
   }
 
-  document.querySelectorAll('.cat-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      activeCat = (btn as HTMLElement).dataset.cat!;
-      document.querySelectorAll('.cat-btn').forEach(b => {
-        b.classList.toggle('border-accent', (b as HTMLElement).dataset.cat === activeCat);
-        b.classList.toggle('text-accent', (b as HTMLElement).dataset.cat === activeCat);
-        b.classList.toggle('border-[#1a1a22]', (b as HTMLElement).dataset.cat !== activeCat);
-        b.classList.toggle('text-[#555]', (b as HTMLElement).dataset.cat !== activeCat);
-      });
-      filter();
-    });
-  });
+  // ── filter state helpers ───────────────────────────────────────────────────
 
-  document.querySelectorAll('.type-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      activeType = (btn as HTMLElement).dataset.type!;
-      document.querySelectorAll('.type-btn').forEach(b => {
-        const active = (b as HTMLElement).dataset.type === activeType;
-        b.classList.toggle('border-accent/60', active);
-        b.classList.toggle('text-accent/60', active);
-        b.classList.toggle('border-[#1a1a22]', !active);
-        b.classList.toggle('text-[#444]', !active);
-      });
-      filter();
+  function applyCatUI(cat: string) {
+    document.querySelectorAll<HTMLElement>('.cat-btn').forEach(b => {
+      const active = b.dataset.cat === cat;
+      b.classList.toggle('border-accent', active);
+      b.classList.toggle('text-accent', active);
+      b.classList.toggle('border-[#1a1a22]', !active);
+      b.classList.toggle('text-[#555]', !active);
     });
-  });
+  }
 
-  document.getElementById('remote-toggle')!.addEventListener('click', (btn) => {
-    remoteOnly = !remoteOnly;
-    const el = btn.target as HTMLElement;
-    el.classList.toggle('border-accent/60', remoteOnly);
-    el.classList.toggle('text-accent/60', remoteOnly);
-    el.classList.toggle('border-[#1a1a22]', !remoteOnly);
-    el.classList.toggle('text-[#444]', !remoteOnly);
+  function applyTypeUI(type: string) {
+    document.querySelectorAll<HTMLElement>('.type-btn').forEach(b => {
+      const active = b.dataset.type === type;
+      b.classList.toggle('border-accent/60', active);
+      b.classList.toggle('text-accent/60', active);
+      b.classList.toggle('border-[#1a1a22]', !active);
+      b.classList.toggle('text-[#444]', !active);
+    });
+  }
+
+  function applyRemoteUI(on: boolean) {
+    const btn = document.getElementById('remote-toggle')!;
+    btn.classList.toggle('border-accent/60', on);
+    btn.classList.toggle('text-accent/60', on);
+    btn.classList.toggle('border-[#1a1a22]', !on);
+    btn.classList.toggle('text-[#444]', !on);
+  }
+
+  // ── save filters (debounced, only when logged in as seeker) ────────────────
+
+  function scheduleSave() {
+    if (!isLoggedIn) return;
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(persistFilters, 600);
+  }
+
+  async function persistFilters() {
+    const payload = JSON.stringify({
+      cat: activeCat, type: activeType, remote: remoteOnly, search: searchQuery,
+    });
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'PATCH', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ saved_job_filters: payload }),
+      });
+      if (res.ok) flashSavedBadge();
+    } catch {}
+  }
+
+  function flashSavedBadge() {
+    badge.classList.remove('hidden');
+    setTimeout(() => badge.classList.add('hidden'), 2500);
+  }
+
+  function applyFilters(f: { cat: string; type: string; remote: boolean; search: string }) {
+    activeCat   = f.cat;
+    activeType  = f.type;
+    remoteOnly  = f.remote;
+    searchQuery = f.search;
+    applyCatUI(activeCat);
+    applyTypeUI(activeType);
+    applyRemoteUI(remoteOnly);
+    (document.getElementById('search') as HTMLInputElement).value = searchQuery;
     filter();
+  }
+
+  // ── event wiring ──────────────────────────────────────────────────────────
+
+  document.querySelectorAll<HTMLElement>('.cat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeCat = btn.dataset.cat!;
+      applyCatUI(activeCat);
+      filter();
+      scheduleSave();
+    });
+  });
+
+  document.querySelectorAll<HTMLElement>('.type-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeType = btn.dataset.type!;
+      applyTypeUI(activeType);
+      filter();
+      scheduleSave();
+    });
+  });
+
+  document.getElementById('remote-toggle')!.addEventListener('click', () => {
+    remoteOnly = !remoteOnly;
+    applyRemoteUI(remoteOnly);
+    filter();
+    scheduleSave();
   });
 
   document.getElementById('search')!.addEventListener('input', (e) => {
     searchQuery = (e.target as HTMLInputElement).value;
     filter();
+    scheduleSave();
   });
+
+  // ── init ──────────────────────────────────────────────────────────────────
 
   async function checkAuth() {
     try {
       const res = await fetch('/api/auth/me', { credentials: 'include' });
-      if (res.ok) {
-        const user = await res.json() as { role: string };
-        const signinEl = document.getElementById('nav-signin')!;
-        signinEl.textContent = 'My Dashboard';
-        signinEl.setAttribute('href', user.role === 'employer' ? '/employer/dashboard' : '/seeker/dashboard');
+      if (!res.ok) return;
+      const user = await res.json() as { role: string };
+      const signinEl = document.getElementById('nav-signin')!;
+      signinEl.textContent = 'My Dashboard';
+      signinEl.setAttribute('href', user.role === 'employer' ? '/employer/dashboard' : '/seeker/dashboard');
+
+      if (user.role === 'seeker') {
+        isLoggedIn = true;
+        // Load saved filters
+        const pr = await fetch('/api/profile', { credentials: 'include' });
+        if (pr.ok) {
+          const profile = await pr.json() as any;
+          if (profile.saved_job_filters) {
+            try {
+              const saved = JSON.parse(profile.saved_job_filters);
+              applyFilters({
+                cat:    saved.cat    ?? 'All',
+                type:   saved.type   ?? 'All Types',
+                remote: Boolean(saved.remote),
+                search: saved.search ?? '',
+              });
+            } catch {}
+          }
+        }
       }
     } catch {}
   }
@@ -252,6 +314,7 @@ import Footer from '../components/Footer.astro';
     }
   }
 
-  checkAuth();
+  // Run auth check (which may set filters) before loading jobs so filter is applied immediately
+  await checkAuth();
   loadJobs();
 </script>

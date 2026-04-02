@@ -13,7 +13,7 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, params, env 
   if (!payload || payload.role !== 'employer') return err('Forbidden', 403);
 
   const { status } = await request.json<{ status: string }>();
-  const validStatuses = ['pending', 'reviewed', 'accepted', 'rejected'];
+  const validStatuses = ['pending', 'reviewed', 'shortlisted', 'accepted', 'rejected'];
   if (!validStatuses.includes(status)) return err('Invalid status');
 
   const app = await env.DB.prepare(
