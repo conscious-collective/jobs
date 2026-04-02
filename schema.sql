@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS jobs (
   description TEXT,
   tags TEXT DEFAULT '[]',
   skills TEXT DEFAULT '[]',
+  salary TEXT,
   status TEXT DEFAULT 'active' CHECK(status IN ('active','closed','draft','suspended')),
   created_at TEXT DEFAULT (datetime('now'))
 );

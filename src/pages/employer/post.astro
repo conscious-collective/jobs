@@ -98,6 +98,12 @@ const SKILLS = [
           </div>
 
           <div>
+            <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Salary / Compensation <span class="text-[#333]">(optional)</span></label>
+            <input type="text" id="salary" placeholder="e.g. £50,000–£70,000 · $80k+ · Competitive"
+              class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+          </div>
+
+          <div>
             <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Job Description *</label>
             <textarea id="description" rows="8" required placeholder="Describe the role, responsibilities, requirements, and what makes it special..."
               class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors resize-none"></textarea>
@@ -226,6 +232,7 @@ const SKILLS = [
           description: (document.getElementById('description') as HTMLTextAreaElement).value,
           tags,
           skills: Array.from(selectedSkills),
+          salary: (document.getElementById('salary') as HTMLInputElement).value || undefined,
           apply_url: (document.getElementById('apply-url') as HTMLInputElement).value || undefined,
         }),
       });
