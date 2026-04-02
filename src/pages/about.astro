@@ -1,0 +1,92 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<BaseLayout
+  title="About | C22 Jobs"
+  description="C22 Jobs is a free, open source job board for the sustainability ecosystem. Built by C22 — Conscious Collective."
+>
+  <Nav />
+
+  <main class="pt-28 pb-24">
+    <div class="max-w-[720px] mx-auto px-6 lg:px-10">
+
+      <div class="section-rule mb-4"></div>
+      <span class="tag">About</span>
+      <h1 class="font-display font-bold text-[#f0f0f0] text-3xl tracking-tight mt-4 mb-10">
+        A job board built for the planet.
+      </h1>
+
+      <!-- What is C22 Jobs -->
+      <div class="border-t border-[#1a1a22] pt-10 mb-12">
+        <h2 class="font-display font-bold text-[#f0f0f0] text-lg tracking-tight mb-4">What is C22 Jobs?</h2>
+        <p class="text-[14px] text-[#888] leading-relaxed mb-4">
+          C22 Jobs is a free, open source job board dedicated to the sustainability ecosystem — clean energy, climate tech, ESG &amp; reporting, environmental science, green finance, circular economy, and more.
+        </p>
+        <p class="text-[14px] text-[#888] leading-relaxed mb-4">
+          No recruiters. No paywalls. No noise. Just meaningful work, posted directly by the organisations doing it.
+        </p>
+        <p class="text-[14px] text-[#888] leading-relaxed">
+          Employers post for free. Job seekers apply for free. That will never change.
+        </p>
+      </div>
+
+      <!-- Why we built it -->
+      <div class="border-t border-[#1a1a22] pt-10 mb-12">
+        <h2 class="font-display font-bold text-[#f0f0f0] text-lg tracking-tight mb-4">Why we built it</h2>
+        <p class="text-[14px] text-[#888] leading-relaxed mb-4">
+          The sustainability talent market is growing fast, but it's fragmented. Professionals looking for climate-aligned roles have to wade through generic job boards full of irrelevant listings. Companies doing real work struggle to reach candidates who care.
+        </p>
+        <p class="text-[14px] text-[#888] leading-relaxed">
+          We built C22 Jobs to fix that — a focused, niche-first board where every listing is relevant by definition. Search by category, filter by skills, apply in minutes.
+        </p>
+      </div>
+
+      <!-- Open source -->
+      <div class="border-t border-[#1a1a22] pt-10 mb-12">
+        <h2 class="font-display font-bold text-[#f0f0f0] text-lg tracking-tight mb-4">Open source</h2>
+        <p class="text-[14px] text-[#888] leading-relaxed mb-4">
+          C22 Jobs is fully open source. The entire codebase — Astro front end, Cloudflare Pages Functions, D1 database schema — is available on GitHub. Fork it, run your own niche job board, adapt it for your community.
+        </p>
+        <div class="flex gap-3 mt-6">
+          <a href="/" class="inline-flex items-center gap-2 px-5 py-3 text-[12px] font-display font-medium tracking-widest uppercase bg-accent text-[#080808] hover:bg-white transition-colors"
+            style="clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);">
+            Browse Jobs →
+          </a>
+          <a href="/auth?mode=signup&role=employer" class="inline-flex items-center gap-2 px-5 py-3 text-[12px] font-display font-medium tracking-widest uppercase border border-[#1a1a22] text-[#888] hover:border-accent/50 hover:text-accent transition-all">
+            Post a Job
+          </a>
+        </div>
+      </div>
+
+      <!-- About C22 -->
+      <div class="border border-[#1a1a22] p-8 relative overflow-hidden">
+        <div class="absolute top-0 left-0 right-0 h-px" style="background: linear-gradient(90deg, #00e5ff, #a855f7); box-shadow: 0 0 8px rgba(0,229,255,0.4);"></div>
+
+        <div class="flex flex-wrap items-start gap-6">
+          <div class="flex-1 min-w-[240px]">
+            <div class="text-[10px] font-display tracking-[0.2em] uppercase text-accent mb-3">Built by</div>
+            <a href="https://c22.space" target="_blank" rel="noopener" class="font-display font-bold text-[#f0f0f0] text-xl tracking-tight hover:text-accent transition-colors block mb-3">
+              C22 — Conscious Collective
+            </a>
+            <p class="text-[13px] text-[#666] leading-relaxed mb-4">
+              C22 is a boutique deep tech agency obsessed with responsible AI and sustainability. We build AI systems, strategy tools, and open products for organisations working on the hardest problems — from net zero infrastructure to climate risk modeling.
+            </p>
+            <p class="text-[13px] text-[#666] leading-relaxed mb-5">
+              Responsible AI and sustainability is in our core DNA — the lens through which every system we design, evaluate, and deploy. C22 Jobs is one expression of that: infrastructure for the ecosystem we're trying to build.
+            </p>
+            <a href="https://c22.space" target="_blank" rel="noopener"
+              class="inline-flex items-center gap-2 text-[12px] font-display tracking-widest uppercase text-accent hover:text-white transition-colors">
+              Visit c22.space →
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>

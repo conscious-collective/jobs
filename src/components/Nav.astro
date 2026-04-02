@@ -4,14 +4,15 @@
 <header id="nav" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
   <div class="max-w-[1200px] mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
     <!-- Logo -->
-    <a href="https://c22.space" class="font-display font-bold text-[15px] tracking-tight text-[#f0f0f0] hover:text-accent transition-colors duration-200 relative group">
-      C22
+    <a href="/" class="font-display font-bold text-[15px] tracking-tight text-[#f0f0f0] hover:text-accent transition-colors duration-200 relative group">
+      C22 Jobs
       <span class="absolute -bottom-0.5 left-0 w-0 h-px bg-accent group-hover:w-full transition-all duration-300" style="box-shadow: 0 0 6px rgba(0,229,255,0.6);"></span>
     </a>
 
     <!-- Desktop nav -->
     <nav class="hidden md:flex items-center gap-8">
       <a href="/" class="text-[12px] text-[#555] hover:text-[#f0f0f0] transition-colors tracking-[0.1em] uppercase font-display">Browse Jobs</a>
+      <a href="/about" class="text-[12px] text-[#555] hover:text-[#f0f0f0] transition-colors tracking-[0.1em] uppercase font-display">About</a>
       <a href="/auth?mode=signup&role=employer" class="text-[12px] text-[#555] hover:text-[#f0f0f0] transition-colors tracking-[0.1em] uppercase font-display">Post a Job</a>
       <a id="nav-auth" href="/auth?mode=signin" class="text-[12px] text-[#555] hover:text-[#f0f0f0] transition-colors tracking-[0.1em] uppercase font-display">Sign In</a>
     </nav>
@@ -28,6 +29,7 @@
   <div id="mobile-menu" class="hidden md:hidden border-t border-[#1a1a22] bg-[#060608]">
     <div class="max-w-[1200px] mx-auto px-6 py-6 flex flex-col gap-5">
       <a href="/" class="text-[14px] text-[#666] hover:text-[#f0f0f0] transition-colors tracking-wide font-display uppercase" onclick="document.getElementById('mobile-menu').classList.add('hidden')">Browse Jobs</a>
+      <a href="/about" class="text-[14px] text-[#666] hover:text-[#f0f0f0] transition-colors tracking-wide font-display uppercase" onclick="document.getElementById('mobile-menu').classList.add('hidden')">About</a>
       <a href="/auth?mode=signup&role=employer" class="text-[14px] text-[#666] hover:text-[#f0f0f0] transition-colors tracking-wide font-display uppercase" onclick="document.getElementById('mobile-menu').classList.add('hidden')">Post a Job</a>
       <a id="nav-auth-mobile" href="/auth?mode=signin" class="text-[14px] text-accent font-medium font-display" onclick="document.getElementById('mobile-menu').classList.add('hidden')">Sign In</a>
     </div>

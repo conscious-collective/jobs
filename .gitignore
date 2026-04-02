@@ -6,6 +6,7 @@ npm-debug.log*
 .env.*
 !.env.example
 .dev.vars
+.prod.vars
 .DS_Store
 .wrangler/
 .vscode/

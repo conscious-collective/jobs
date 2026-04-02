@@ -9,15 +9,16 @@ const year = new Date().getFullYear();
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
 
       <div class="flex flex-col gap-1">
-        <a href="https://c22.space" class="font-display font-bold text-[15px] text-[#f0f0f0] tracking-tight hover:text-accent transition-colors">C22</a>
-        <span class="text-[11px] text-[#2a2a2a] tracking-[0.15em] uppercase font-display">Sustainability Jobs</span>
+        <a href="/" class="font-display font-bold text-[15px] text-[#f0f0f0] tracking-tight hover:text-accent transition-colors">C22 Jobs</a>
+        <span class="text-[11px] text-[#2a2a2a] tracking-[0.15em] uppercase font-display">Free · Open Source</span>
       </div>
 
       <nav class="flex items-center gap-6 flex-wrap">
         <a href="/" class="text-[11px] text-[#383838] hover:text-[#f0f0f0] transition-colors tracking-[0.12em] uppercase font-display">Browse Jobs</a>
+        <a href="/about" class="text-[11px] text-[#383838] hover:text-[#f0f0f0] transition-colors tracking-[0.12em] uppercase font-display">About</a>
         <a href="/auth?mode=signup&role=employer" class="text-[11px] text-[#383838] hover:text-[#f0f0f0] transition-colors tracking-[0.12em] uppercase font-display">Post a Job</a>
         <a href="/auth?mode=signup&role=seeker" class="text-[11px] text-[#383838] hover:text-[#f0f0f0] transition-colors tracking-[0.12em] uppercase font-display">Sign Up</a>
-        <a href="https://c22.space" class="text-[11px] text-accent hover:text-white transition-colors tracking-[0.12em] uppercase font-display" style="text-shadow: 0 0 8px rgba(0,229,255,0.3);">c22.space →</a>
+        <a href="https://c22.space" class="text-[11px] text-accent hover:text-white transition-colors tracking-[0.12em] uppercase font-display" style="text-shadow: 0 0 8px rgba(0,229,255,0.3);">By C22 →</a>
       </nav>
 
       <div class="flex items-center gap-5">
@@ -27,7 +28,11 @@ const year = new Date().getFullYear();
 
     <div class="mt-8 pt-6 border-t border-[#111] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
       <p class="text-[10px] text-[#222] tracking-[0.15em] uppercase font-display">
-        © {year} C22. All rights reserved.
+        © {year} C22 Jobs · Built by <a href="https://c22.space" class="hover:text-[#555] transition-colors">C22</a>. Free &amp; open source.
+      </p>
+      <p class="text-[10px] text-[#1a1a22] font-display leading-relaxed">
+        A free, open source job board for the sustainability ecosystem.<br class="hidden sm:block" />
+        Made by <a href="https://c22.space" target="_blank" rel="noopener" class="text-[#2a2a2a] hover:text-accent transition-colors">C22 (Conscious Collective)</a> — boutique deep tech &amp; responsible AI.
       </p>
     </div>
   </div>
