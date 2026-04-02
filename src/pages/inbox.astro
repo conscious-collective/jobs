@@ -89,37 +89,6 @@ import Footer from '../components/Footer.astro';
     container.scrollTop = container.scrollHeight;
   }
 
-  function escapeHtml(s: string) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  async function loadMessages() {
-    const container = document.getElementById('messages-list')!;
-    const res = await fetch(`/api/messages?application_id=${applicationId}`, { credentials: 'include' });
-    const msgs = res.ok ? await res.json() as any[] : [];
-
-    if (msgs.length === 0) {
-      container.innerHTML = '<p class="text-[13px] text-[#333] italic py-8 text-center">No messages yet. Start the conversation.</p>';
-      return;
-    }
-
-    container.innerHTML = msgs.map(m => {
-      const isMine = m.sender_id === myUserId;
-      return `
-        <div class="flex ${isMine ? 'flex-row-reverse' : 'flex-row'}">
-          <div class="max-w-[75%]">
-            <div class="text-[10px] font-display text-[#333] mb-1 ${isMine ? 'text-right' : ''}">
-              ${isMine ? 'You' : escapeHtml(m.sender_name || m.sender_email)} ·
-              ${new Date(m.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-            </div>
-            <div class="text-[13px] text-[#ccc] p-4 border ${isMine ? 'border-accent/20 bg-accent/5' : 'border-[#1a1a22] bg-[#0d0d10]'} whitespace-pre-wrap leading-relaxed">${escapeHtml(m.body)}</div>
-          </div>
-        </div>
-      `;
-    }).join('');
-    container.scrollTop = container.scrollHeight;
-  }
-
   async function sendMessage() {
     const ta = document.getElementById('msg-input') as HTMLTextAreaElement;
     const body = ta.value.trim();
