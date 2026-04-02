@@ -1,0 +1,120 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Admin Dashboard" description="">
+  <div class="min-h-screen bg-[#060608] text-[#f0f0f0]">
+
+    <!-- Sidebar -->
+    <div class="fixed top-0 left-0 h-full w-[200px] border-r border-[#1a1a22] bg-[#060608] flex flex-col z-10">
+      <div class="px-6 py-6 border-b border-[#1a1a22]">
+        <div class="text-[11px] font-display tracking-[0.2em] uppercase text-accent mb-0.5">Admin</div>
+        <div class="text-[13px] font-display text-[#f0f0f0] font-bold">Portal</div>
+      </div>
+      <nav class="flex-1 px-3 py-4 space-y-1">
+        <a href="/admin/dashboard" class="flex items-center gap-3 px-3 py-2.5 text-[12px] font-display tracking-wide uppercase text-accent bg-accent/5 border-l border-accent">Dashboard</a>
+        <a href="/admin/jobs" class="flex items-center gap-3 px-3 py-2.5 text-[12px] font-display tracking-wide uppercase text-[#555] hover:text-[#f0f0f0] transition-colors">Jobs</a>
+        <a href="/admin/users" class="flex items-center gap-3 px-3 py-2.5 text-[12px] font-display tracking-wide uppercase text-[#555] hover:text-[#f0f0f0] transition-colors">Users</a>
+        <a href="/admin/applications" class="flex items-center gap-3 px-3 py-2.5 text-[12px] font-display tracking-wide uppercase text-[#555] hover:text-[#f0f0f0] transition-colors">Applications</a>
+      </nav>
+      <div class="px-3 py-4 border-t border-[#1a1a22]">
+        <button id="signout" class="w-full px-3 py-2.5 text-[12px] font-display tracking-wide uppercase text-[#555] hover:text-[#ff6b35] transition-colors text-left">Sign Out</button>
+      </div>
+    </div>
+
+    <!-- Main -->
+    <div class="ml-[200px] p-10">
+      <div id="loading" class="text-[#444] font-display text-[12px] tracking-widest uppercase py-10">Loading…</div>
+
+      <div id="content" class="hidden">
+        <div class="mb-10">
+          <div class="text-[10px] font-display tracking-[0.2em] uppercase text-[#444] mb-1">Overview</div>
+          <h1 class="font-display font-bold text-[#f0f0f0] text-2xl tracking-tight">Dashboard</h1>
+        </div>
+
+        <!-- Stat cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-px bg-[#1a1a22] mb-10">
+          <div class="bg-[#060608] p-6">
+            <div class="text-[28px] font-display font-bold text-accent" id="s-users">—</div>
+            <div class="text-[11px] text-[#444] font-display tracking-widest uppercase mt-1">Total Users</div>
+            <div class="text-[11px] text-[#333] mt-1"><span id="s-employers">—</span> employers · <span id="s-seekers">—</span> seekers</div>
+          </div>
+          <div class="bg-[#060608] p-6">
+            <div class="text-[28px] font-display font-bold text-[#f0f0f0]" id="s-jobs">—</div>
+            <div class="text-[11px] text-[#444] font-display tracking-widest uppercase mt-1">Total Jobs</div>
+            <div class="text-[11px] text-[#333] mt-1"><span id="s-active">—</span> active</div>
+          </div>
+          <div class="bg-[#060608] p-6">
+            <div class="text-[28px] font-display font-bold text-[#f0f0f0]" id="s-apps">—</div>
+            <div class="text-[11px] text-[#444] font-display tracking-widest uppercase mt-1">Applications</div>
+            <div class="text-[11px] text-[#333] mt-1"><span id="s-pending">—</span> pending</div>
+          </div>
+          <div class="bg-[#060608] p-6">
+            <a href="/" target="_blank" class="text-[11px] font-display tracking-widest uppercase text-accent hover:text-white transition-colors">View Live Board →</a>
+            <div class="text-[11px] text-[#333] mt-2 font-display">Public job board</div>
+          </div>
+        </div>
+
+        <!-- Recent jobs -->
+        <div class="mb-3 flex items-center justify-between">
+          <div class="text-[11px] font-display tracking-widest uppercase text-[#444]">Recent Jobs</div>
+          <a href="/admin/jobs" class="text-[11px] font-display text-accent hover:text-white transition-colors">View all →</a>
+        </div>
+        <div id="recent-jobs" class="border border-[#1a1a22] divide-y divide-[#1a1a22]"></div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  async function init() {
+    const meRes = await fetch('/api/auth/me', { credentials: 'include' });
+    if (!meRes.ok) { window.location.href = '/admin'; return; }
+    const me = await meRes.json() as { role: string };
+    if (me.role !== 'admin') { window.location.href = '/admin'; return; }
+
+    const [statsRes, jobsRes] = await Promise.all([
+      fetch('/api/admin/stats', { credentials: 'include' }),
+      fetch('/api/admin/jobs', { credentials: 'include' }),
+    ]);
+
+    const stats = await statsRes.json() as any;
+    const jobs = (await jobsRes.json() as any[]).slice(0, 8);
+
+    document.getElementById('loading')!.classList.add('hidden');
+    document.getElementById('content')!.classList.remove('hidden');
+
+    document.getElementById('s-users')!.textContent = String(stats.users.total);
+    document.getElementById('s-employers')!.textContent = String(stats.users.employers);
+    document.getElementById('s-seekers')!.textContent = String(stats.users.seekers);
+    document.getElementById('s-jobs')!.textContent = String(stats.jobs.total);
+    document.getElementById('s-active')!.textContent = String(stats.jobs.active);
+    document.getElementById('s-apps')!.textContent = String(stats.applications.total);
+    document.getElementById('s-pending')!.textContent = String(stats.applications.pending);
+
+    const STATUS_COLOR: Record<string, string> = {
+      active: 'text-emerald-600', closed: 'text-[#555]', draft: 'text-yellow-600', suspended: 'text-[#ff6b35]',
+    };
+
+    document.getElementById('recent-jobs')!.innerHTML = jobs.length === 0
+      ? '<div class="p-6 text-[13px] text-[#444]">No jobs yet.</div>'
+      : jobs.map((j: any) => `
+        <div class="px-5 py-4 flex items-center justify-between gap-4 hover:bg-[#0d0d10] transition-colors">
+          <div class="flex-1 min-w-0">
+            <div class="text-[13px] font-display font-bold text-[#f0f0f0] truncate">${j.title}</div>
+            <div class="text-[11px] text-[#444] mt-0.5">${j.company} · ${j.employer_email}</div>
+          </div>
+          <div class="flex items-center gap-3 shrink-0">
+            <span class="text-[10px] font-display tracking-widest uppercase ${STATUS_COLOR[j.status] ?? ''}">${j.status}</span>
+            <span class="text-[11px] text-[#333]">${j.applicant_count} apps</span>
+          </div>
+        </div>`).join('');
+
+    document.getElementById('signout')!.addEventListener('click', async () => {
+      await fetch('/api/auth/signout', { method: 'POST', credentials: 'include' });
+      window.location.href = '/admin';
+    });
+  }
+
+  init();
+</script>

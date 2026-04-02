@@ -1,0 +1,72 @@
+---
+---
+
+<header id="nav" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+  <div class="max-w-[1200px] mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
+    <!-- Logo -->
+    <a href="https://c22.space" class="font-display font-bold text-[15px] tracking-tight text-[#f0f0f0] hover:text-accent transition-colors duration-200 relative group">
+      C22
+      <span class="absolute -bottom-0.5 left-0 w-0 h-px bg-accent group-hover:w-full transition-all duration-300" style="box-shadow: 0 0 6px rgba(0,229,255,0.6);"></span>
+    </a>
+
+    <!-- Desktop nav -->
+    <nav class="hidden md:flex items-center gap-8">
+      <a href="/" class="text-[12px] text-[#555] hover:text-[#f0f0f0] transition-colors tracking-[0.1em] uppercase font-display">Browse Jobs</a>
+      <a href="/auth?mode=signup&role=employer" class="text-[12px] text-[#555] hover:text-[#f0f0f0] transition-colors tracking-[0.1em] uppercase font-display">Post a Job</a>
+      <a id="nav-auth" href="/auth?mode=signin" class="text-[12px] text-[#555] hover:text-[#f0f0f0] transition-colors tracking-[0.1em] uppercase font-display">Sign In</a>
+    </nav>
+
+    <!-- Mobile hamburger -->
+    <button id="menu-toggle" class="md:hidden flex flex-col gap-[5px] p-1" aria-label="Toggle menu">
+      <span class="block w-5 h-px bg-[#f0f0f0] transition-all duration-200" id="bar1"></span>
+      <span class="block w-5 h-px bg-[#f0f0f0] transition-all duration-200" id="bar2"></span>
+      <span class="block w-3 h-px bg-accent transition-all duration-200" id="bar3" style="box-shadow: 0 0 4px rgba(0,229,255,0.6);"></span>
+    </button>
+  </div>
+
+  <!-- Mobile menu -->
+  <div id="mobile-menu" class="hidden md:hidden border-t border-[#1a1a22] bg-[#060608]">
+    <div class="max-w-[1200px] mx-auto px-6 py-6 flex flex-col gap-5">
+      <a href="/" class="text-[14px] text-[#666] hover:text-[#f0f0f0] transition-colors tracking-wide font-display uppercase" onclick="document.getElementById('mobile-menu').classList.add('hidden')">Browse Jobs</a>
+      <a href="/auth?mode=signup&role=employer" class="text-[14px] text-[#666] hover:text-[#f0f0f0] transition-colors tracking-wide font-display uppercase" onclick="document.getElementById('mobile-menu').classList.add('hidden')">Post a Job</a>
+      <a id="nav-auth-mobile" href="/auth?mode=signin" class="text-[14px] text-accent font-medium font-display" onclick="document.getElementById('mobile-menu').classList.add('hidden')">Sign In</a>
+    </div>
+  </div>
+</header>
+
+<script>
+  const nav = document.getElementById('nav')!;
+  const toggle = document.getElementById('menu-toggle')!;
+  const menu = document.getElementById('mobile-menu')!;
+
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 40) {
+      nav.style.background = 'rgba(6,6,8,0.93)';
+      nav.style.backdropFilter = 'blur(16px)';
+      nav.style.borderBottom = '1px solid rgba(0,229,255,0.08)';
+    } else {
+      nav.style.background = 'transparent';
+      nav.style.backdropFilter = 'none';
+      nav.style.borderBottom = '1px solid transparent';
+    }
+  });
+
+  toggle.addEventListener('click', () => {
+    menu.classList.toggle('hidden');
+  });
+
+  // Update nav based on auth state
+  fetch('/api/auth/me', { credentials: 'include' }).then(async r => {
+    if (r.ok) {
+      const user = await r.json() as { role: string };
+      const href = user.role === 'employer' ? '/employer/dashboard' : '/seeker/dashboard';
+      const label = 'My Dashboard';
+      const authEl = document.getElementById('nav-auth')!;
+      const authMobileEl = document.getElementById('nav-auth-mobile')!;
+      authEl.textContent = label;
+      authEl.setAttribute('href', href);
+      authMobileEl.textContent = label;
+      authMobileEl.setAttribute('href', href);
+    }
+  }).catch(() => {});
+</script>

@@ -1,0 +1,134 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<BaseLayout
+  title="Apply | Sustainability Jobs"
+  description="Apply to sustainability jobs. Quick application, no fluff."
+>
+  <Nav />
+
+  <main class="pt-28 pb-24">
+    <div class="max-w-[640px] mx-auto px-6">
+
+      <div id="checking" class="py-20 text-center text-[#444] font-display text-[13px] tracking-widest uppercase">
+        Loading…
+      </div>
+
+      <div id="apply-content" class="hidden">
+        <a href="#" id="back-link" class="inline-flex items-center gap-2 text-[12px] text-[#444] hover:text-accent transition-colors font-display tracking-wider uppercase mb-10">
+          <svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M13 7H1M1 7L7 1M1 7L7 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Back to Job
+        </a>
+
+        <div class="section-rule mb-4"></div>
+        <span class="tag">Apply</span>
+        <h1 class="font-display font-bold text-[#f0f0f0] text-2xl tracking-tight mt-4 mb-1">
+          Apply for <span id="job-title-display" class="text-accent"></span>
+        </h1>
+        <p id="job-meta" class="text-[13px] text-[#555] mb-10"></p>
+
+        <form id="apply-form" class="space-y-7">
+          <div>
+            <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Cover Letter <span class="text-[#333]">(optional)</span></label>
+            <textarea id="cover-letter" rows="6" placeholder="Tell them why you're the right fit for this role..."
+              class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors resize-none"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">LinkedIn Profile <span class="text-[#333]">(optional)</span></label>
+            <input type="url" id="linkedin" placeholder="https://linkedin.com/in/you"
+              class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Portfolio / Website <span class="text-[#333]">(optional)</span></label>
+            <input type="url" id="portfolio" placeholder="https://yoursite.com"
+              class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+          </div>
+
+          <div id="apply-error" class="hidden text-[13px] text-[#ff6b35]"></div>
+          <div id="apply-success" class="hidden text-[13px] text-accent p-4 border border-accent/20 bg-accent/5">
+            Application submitted! You can track its status in your <a href="/seeker/dashboard" class="underline">dashboard</a>.
+          </div>
+
+          <button type="submit" id="apply-btn"
+            class="inline-flex items-center gap-2 px-7 py-4 text-[13px] font-display font-medium tracking-widest uppercase bg-accent text-[#080808] hover:bg-white transition-colors duration-200 disabled:opacity-40"
+            style="clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);">
+            Submit Application
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M1 7H13M13 7L7 1M13 7L7 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const jobId = params.get('id');
+
+  async function init() {
+    if (!jobId) { window.location.href = '/'; return; }
+
+    const meRes = await fetch('/api/auth/me', { credentials: 'include' });
+    if (!meRes.ok) {
+      window.location.href = `/auth?mode=signup&role=seeker&redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+      return;
+    }
+    const me = await meRes.json() as { role: string };
+    if (me.role !== 'seeker') {
+      window.location.href = '/';
+      return;
+    }
+
+    const jobRes = await fetch(`/api/jobs/${jobId}`, { credentials: 'include' });
+    if (!jobRes.ok) { window.location.href = '/'; return; }
+    const job = await jobRes.json() as any;
+
+    document.getElementById('checking')!.classList.add('hidden');
+    document.getElementById('apply-content')!.classList.remove('hidden');
+    document.getElementById('job-title-display')!.textContent = job.title;
+    document.getElementById('job-meta')!.textContent = `${job.company}${job.location ? ' · ' + job.location : ''}`;
+    (document.getElementById('back-link') as HTMLAnchorElement).href = `/view?id=${jobId}`;
+
+    document.getElementById('apply-form')!.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('apply-btn') as HTMLButtonElement;
+      const errEl = document.getElementById('apply-error')!;
+      const successEl = document.getElementById('apply-success')!;
+      btn.disabled = true; btn.textContent = 'Submitting…';
+      errEl.classList.add('hidden');
+
+      const res = await fetch('/api/applications', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          job_id: jobId,
+          cover_letter: (document.getElementById('cover-letter') as HTMLTextAreaElement).value || undefined,
+          linkedin_url: (document.getElementById('linkedin') as HTMLInputElement).value || undefined,
+          portfolio_url: (document.getElementById('portfolio') as HTMLInputElement).value || undefined,
+        }),
+      });
+
+      const data = await res.json() as any;
+      if (res.ok) {
+        successEl.classList.remove('hidden');
+        (document.getElementById('apply-form') as HTMLFormElement).reset();
+        btn.textContent = 'Submitted ✓';
+      } else {
+        errEl.textContent = data.error ?? 'Something went wrong.';
+        errEl.classList.remove('hidden');
+        btn.disabled = false; btn.textContent = 'Submit Application';
+      }
+    });
+  }
+
+  init();
+</script>

@@ -1,0 +1,141 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+---
+
+<BaseLayout
+  title="Applicants | Sustainability Jobs"
+  description="Review and manage applicants for your job listing."
+>
+  <Nav />
+
+  <main class="pt-28 pb-24">
+    <div class="max-w-[1000px] mx-auto px-6 lg:px-10">
+
+      <div id="loading" class="py-20 text-center text-[#444] font-display text-[13px] tracking-widest uppercase">
+        Loading…
+      </div>
+
+      <div id="content" class="hidden">
+        <a href="/employer/dashboard" class="inline-flex items-center gap-2 text-[12px] text-[#444] hover:text-accent transition-colors font-display tracking-wider uppercase mb-10">
+          <svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M13 7H1M1 7L7 1M1 7L7 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Dashboard
+        </a>
+
+        <div class="section-rule mb-4"></div>
+        <span class="tag">Applicants</span>
+        <h1 id="job-title" class="font-display font-bold text-[#f0f0f0] text-2xl tracking-tight mt-4 mb-10"></h1>
+
+        <div id="no-apps" class="hidden text-center py-16 border border-dashed border-[#1a1a22]">
+          <p class="text-[14px] text-[#555]">No applicants yet.</p>
+          <p class="text-[13px] text-[#333] mt-1">Share your job listing to attract candidates.</p>
+        </div>
+
+        <div id="apps-list" class="space-y-px"></div>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<script>
+  const STATUS_COLORS: Record<string, string> = {
+    pending: 'border-[#1a1a22] text-[#555]',
+    reviewed: 'border-yellow-800/40 text-yellow-600',
+    accepted: 'border-emerald-800/40 text-emerald-600',
+    rejected: 'border-red-900/40 text-red-700',
+  };
+
+  async function updateStatus(appId: string, status: string, btn: HTMLButtonElement) {
+    btn.disabled = true;
+    const res = await fetch(`/api/applications/${appId}`, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    if (res.ok) {
+      window.location.reload();
+    } else {
+      btn.disabled = false;
+    }
+  }
+
+  async function init() {
+    const params = new URLSearchParams(window.location.search);
+    const jobId = params.get('job_id');
+    if (!jobId) { window.location.href = '/employer/dashboard'; return; }
+
+    const meRes = await fetch('/api/auth/me', { credentials: 'include' });
+    if (!meRes.ok) { window.location.href = '/auth?mode=signin'; return; }
+    const me = await meRes.json() as { role: string };
+    if (me.role !== 'employer') { window.location.href = '/'; return; }
+
+    const res = await fetch(`/api/employer/applicants/${jobId}`, { credentials: 'include' });
+    if (!res.ok) { window.location.href = '/employer/dashboard'; return; }
+    const { job, applicants } = await res.json() as { job: any; applicants: any[] };
+
+    document.getElementById('loading')!.classList.add('hidden');
+    document.getElementById('content')!.classList.remove('hidden');
+    document.getElementById('job-title')!.textContent = job.title;
+    document.title = `Applicants — ${job.title} | Sustainability Jobs`;
+
+    const listEl = document.getElementById('apps-list')!;
+
+    if (applicants.length === 0) {
+      document.getElementById('no-apps')!.classList.remove('hidden');
+      return;
+    }
+
+    listEl.innerHTML = applicants.map(a => `
+      <div class="border border-[#1a1a22] bg-[#080808] p-7 md:p-8 relative overflow-hidden" data-app-id="${a.id}">
+        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+          <div class="flex-1">
+            <div class="flex flex-wrap items-center gap-2 mb-3">
+              <span class="text-[14px] font-display font-bold text-[#f0f0f0]">${a.email}</span>
+              <span class="text-[10px] font-display tracking-widest uppercase px-2 py-0.5 border ${STATUS_COLORS[a.status] ?? STATUS_COLORS.pending}">
+                ${a.status}
+              </span>
+              <span class="text-[11px] text-[#333] font-display">${new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+            </div>
+
+            ${a.bio ? `<p class="text-[13px] text-[#666] mb-3 max-w-[500px]">${a.bio}</p>` : ''}
+
+            ${a.cover_letter ? `
+            <div class="mb-4">
+              <div class="text-[10px] font-display tracking-widest uppercase text-[#333] mb-2">Cover Letter</div>
+              <p class="text-[13px] text-[#666] leading-relaxed max-w-[560px] whitespace-pre-wrap">${a.cover_letter}</p>
+            </div>` : ''}
+
+            <div class="flex flex-wrap gap-3">
+              ${a.linkedin_url ? `<a href="${a.linkedin_url}" target="_blank" rel="noopener" class="text-[11px] font-display tracking-wide text-accent hover:text-white transition-colors border-b border-accent/30 pb-px">LinkedIn →</a>` : ''}
+              ${a.portfolio_url ? `<a href="${a.portfolio_url}" target="_blank" rel="noopener" class="text-[11px] font-display tracking-wide text-accent hover:text-white transition-colors border-b border-accent/30 pb-px">Portfolio →</a>` : ''}
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-2 shrink-0 min-w-[140px]">
+            <div class="text-[10px] font-display tracking-widest uppercase text-[#333] mb-1">Update Status</div>
+            ${['pending','reviewed','accepted','rejected'].map(s => `
+              <button data-status="${s}" class="status-btn text-[11px] font-display tracking-widest uppercase px-3 py-2 border transition-all duration-200 ${a.status === s ? (STATUS_COLORS[s] ?? '') + ' bg-[#0d0d10]' : 'border-[#1a1a22] text-[#444] hover:border-[#2a2a2a] hover:text-[#666]'}">
+                ${s}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    listEl.querySelectorAll('.status-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const card = (e.target as HTMLElement).closest('[data-app-id]')!;
+        const appId = (card as HTMLElement).dataset.appId!;
+        const status = (btn as HTMLElement).dataset.status!;
+        updateStatus(appId, status, btn as HTMLButtonElement);
+      });
+    });
+  }
+
+  init();
+</script>

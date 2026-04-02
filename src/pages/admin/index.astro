@@ -1,0 +1,76 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Admin" description="">
+  <main class="min-h-screen flex items-center justify-center bg-[#060608]">
+    <div class="w-full max-w-[400px] px-6">
+
+      <div class="mb-8 text-center">
+        <div class="w-8 h-px mx-auto mb-4" style="background: linear-gradient(90deg, transparent, #00e5ff, transparent);"></div>
+        <h1 class="font-display font-bold text-[#f0f0f0] text-xl tracking-tight">Admin Portal</h1>
+      </div>
+
+      <form id="login-form" class="space-y-6 border border-[#1a1a22] p-8 relative overflow-hidden">
+        <div class="absolute top-0 left-0 right-0 h-px" style="background: linear-gradient(90deg, #00e5ff, #a855f7);"></div>
+
+        <div>
+          <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Email</label>
+          <input type="email" id="email" required autocomplete="off"
+            class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Password</label>
+          <input type="password" id="password" required autocomplete="off"
+            class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+        </div>
+
+        <div id="login-error" class="hidden text-[13px] text-[#ff6b35]"></div>
+
+        <button type="submit" id="login-btn"
+          class="w-full py-3.5 text-[12px] font-display font-medium tracking-widest uppercase bg-accent text-[#080808] hover:bg-white transition-colors disabled:opacity-40"
+          style="clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);">
+          Sign In
+        </button>
+      </form>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  // Redirect if already admin
+  fetch('/api/auth/me', { credentials: 'include' }).then(async r => {
+    if (r.ok) {
+      const u = await r.json() as { role: string };
+      if (u.role === 'admin') window.location.href = '/admin/dashboard';
+    }
+  });
+
+  document.getElementById('login-form')!.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('login-btn') as HTMLButtonElement;
+    const errEl = document.getElementById('login-error')!;
+    btn.disabled = true; btn.textContent = 'Signing in…';
+    errEl.classList.add('hidden');
+
+    const res = await fetch('/api/admin/auth', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: (document.getElementById('email') as HTMLInputElement).value,
+        password: (document.getElementById('password') as HTMLInputElement).value,
+      }),
+    });
+
+    if (res.ok) {
+      window.location.href = '/admin/dashboard';
+    } else {
+      const data = await res.json() as any;
+      errEl.textContent = data.error ?? 'Invalid credentials.';
+      errEl.classList.remove('hidden');
+      btn.disabled = false; btn.textContent = 'Sign In';
+    }
+  });
+</script>

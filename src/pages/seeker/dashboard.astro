@@ -1,0 +1,111 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+---
+
+<BaseLayout
+  title="My Applications | Sustainability Jobs"
+  description="Track the status of your sustainability job applications."
+>
+  <Nav />
+
+  <main class="pt-28 pb-24">
+    <div class="max-w-[900px] mx-auto px-6 lg:px-10">
+
+      <div id="loading" class="py-20 text-center text-[#444] font-display text-[13px] tracking-widest uppercase">
+        Loading…
+      </div>
+
+      <div id="dashboard" class="hidden">
+        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-12">
+          <div>
+            <div class="section-rule mb-4"></div>
+            <span class="tag">My Applications</span>
+            <h1 class="font-display font-bold text-[#f0f0f0] text-2xl tracking-tight mt-4">Your Applications</h1>
+            <p id="user-email" class="text-[13px] text-[#444] mt-1"></p>
+          </div>
+          <div class="flex gap-3">
+            <a href="/"
+              class="inline-flex items-center gap-2 px-5 py-3 text-[12px] font-display font-medium tracking-widest uppercase border border-[#1a1a22] text-[#666] hover:border-accent/50 hover:text-accent transition-all">
+              Browse Jobs →
+            </a>
+            <button id="signout-btn"
+              class="px-5 py-3 text-[12px] font-display tracking-widest uppercase border border-[#1a1a22] text-[#555] hover:border-accent/50 hover:text-accent transition-all">
+              Sign Out
+            </button>
+          </div>
+        </div>
+
+        <div id="no-apps" class="hidden text-center py-16 border border-dashed border-[#1a1a22]">
+          <p class="text-[14px] text-[#555] mb-1">No applications yet.</p>
+          <a href="/" class="text-accent hover:text-white transition-colors text-[13px]">Browse jobs and apply →</a>
+        </div>
+
+        <div id="apps-list" class="space-y-px"></div>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<script>
+  const STATUS_COLORS: Record<string, string> = {
+    pending: 'border-[#1a1a22] text-[#555]',
+    reviewed: 'border-yellow-800/40 text-yellow-600',
+    accepted: 'border-emerald-800/40 text-emerald-600',
+    rejected: 'border-red-900/40 text-red-700',
+  };
+
+  async function init() {
+    const meRes = await fetch('/api/auth/me', { credentials: 'include' });
+    if (!meRes.ok) { window.location.href = '/auth?mode=signin'; return; }
+    const me = await meRes.json() as { email: string; role: string };
+    if (me.role !== 'seeker') { window.location.href = '/employer/dashboard'; return; }
+
+    document.getElementById('loading')!.classList.add('hidden');
+    document.getElementById('dashboard')!.classList.remove('hidden');
+    document.getElementById('user-email')!.textContent = me.email;
+
+    const res = await fetch('/api/seeker/applications', { credentials: 'include' });
+    const apps = await res.json() as any[];
+
+    const listEl = document.getElementById('apps-list')!;
+
+    if (apps.length === 0) {
+      document.getElementById('no-apps')!.classList.remove('hidden');
+    } else {
+      listEl.innerHTML = apps.map(a => `
+        <a href="/view?id=${a.job_id}" class="group block border border-[#1a1a22] hover:border-[#2a2a2a] bg-[#080808] hover:bg-[#0c0c0c] transition-all duration-300 relative overflow-hidden">
+          <div class="p-7">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div class="flex-1">
+                <div class="flex flex-wrap items-center gap-2 mb-2">
+                  <span class="text-[10px] font-display tracking-[0.15em] uppercase px-2 py-0.5 border border-[#00e5ff]/20 text-accent/70">${a.category}</span>
+                  <span class="text-[10px] font-display tracking-wide border border-[#1a1a22] text-[#444] px-2 py-0.5">${a.type}</span>
+                </div>
+                <h3 class="font-display font-bold text-[#f0f0f0] text-[16px] tracking-tight group-hover:text-accent transition-colors">${a.title}</h3>
+                <p class="text-[13px] text-[#555] mt-1">${a.company}${a.location ? ' · ' + a.location : ''}</p>
+                <p class="text-[11px] text-[#333] mt-1 font-display">Applied ${new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+              </div>
+              <div class="shrink-0">
+                <span class="text-[11px] font-display tracking-widest uppercase px-3 py-1.5 border ${STATUS_COLORS[a.status] ?? STATUS_COLORS.pending}">
+                  ${a.status}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="absolute bottom-0 left-0 right-0 h-px bg-accent scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+        </a>
+      `).join('');
+    }
+
+    document.getElementById('signout-btn')!.addEventListener('click', async () => {
+      await fetch('/api/auth/signout', { method: 'POST', credentials: 'include' });
+      window.location.href = '/';
+    });
+  }
+
+  init();
+</script>

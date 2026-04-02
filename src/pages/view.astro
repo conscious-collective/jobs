@@ -1,0 +1,135 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<BaseLayout
+  title="Job Detail | Sustainability Jobs"
+  description="View full job details and apply."
+>
+  <Nav />
+
+  <main class="pt-28 pb-24">
+    <div class="max-w-[800px] mx-auto px-6 lg:px-10">
+
+      <div id="job-loading" class="py-20 text-center text-[#444] font-display text-[13px] tracking-widest uppercase">
+        Loading…
+      </div>
+
+      <div id="job-notfound" class="hidden py-20 text-center">
+        <p class="text-[#555] text-[14px]">Job not found.</p>
+        <a href="/" class="text-accent hover:text-white transition-colors text-[13px] mt-2 inline-block">← Back to jobs</a>
+      </div>
+
+      <div id="job-content" class="hidden">
+        <a href="/" class="inline-flex items-center gap-2 text-[12px] text-[#444] hover:text-accent transition-colors font-display tracking-wider uppercase mb-10">
+          <svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M13 7H1M1 7L7 1M1 7L7 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          All Jobs
+        </a>
+
+        <div class="section-rule mb-4"></div>
+
+        <div id="job-category" class="tag mb-4"></div>
+
+        <h1 id="job-title" class="font-display font-bold text-[#f0f0f0] leading-tight tracking-tight mb-3" style="font-size: clamp(1.75rem, 4vw, 2.75rem);"></h1>
+
+        <div class="flex flex-wrap items-center gap-3 mb-8">
+          <span id="job-company" class="text-[15px] text-[#888] font-display"></span>
+          <span id="job-location" class="text-[13px] text-[#555] border-l border-[#1a1a22] pl-3"></span>
+          <span id="job-type" class="text-[11px] font-display tracking-wide border border-[#1a1a22] text-[#555] px-2.5 py-1"></span>
+          <span id="job-date" class="text-[11px] text-[#333] font-display"></span>
+        </div>
+
+        <div id="job-tags" class="flex flex-wrap gap-2 mb-10"></div>
+
+        <div class="border-t border-[#1a1a22] pt-10 mb-12">
+          <div id="job-description" class="text-[14px] text-[#888] leading-relaxed whitespace-pre-wrap"></div>
+        </div>
+
+        <div class="border border-[#1a1a22] p-8 relative overflow-hidden">
+          <div class="absolute top-0 left-0 right-0 h-px" style="background: linear-gradient(90deg, #00e5ff, #a855f7); box-shadow: 0 0 8px rgba(0,229,255,0.4);"></div>
+          <h2 class="font-display font-bold text-[#f0f0f0] text-xl tracking-tight mb-2">Ready to apply?</h2>
+          <p class="text-[13px] text-[#555] mb-6">Takes less than 2 minutes. Free, no account required… unless you want to track your applications.</p>
+          <div class="flex flex-wrap gap-3">
+            <a id="apply-btn" href="#"
+              class="inline-flex items-center gap-2 px-6 py-3 text-[12px] font-display font-medium tracking-widest uppercase bg-accent text-[#080808] hover:bg-white transition-colors"
+              style="clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);">
+              Apply Now →
+            </a>
+            <a href="/" class="inline-flex items-center gap-2 px-6 py-3 text-[12px] font-display font-medium tracking-widest uppercase border border-[#1a1a22] text-[#666] hover:border-accent/50 hover:text-accent transition-all">
+              ← Browse More Jobs
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const jobId = params.get('id');
+
+  if (!jobId) {
+    document.getElementById('job-loading')!.classList.add('hidden');
+    document.getElementById('job-notfound')!.classList.remove('hidden');
+  } else {
+    fetch(`/api/jobs/${jobId}`, { credentials: 'include' })
+      .then(async r => {
+        document.getElementById('job-loading')!.classList.add('hidden');
+        if (!r.ok) {
+          document.getElementById('job-notfound')!.classList.remove('hidden');
+          return;
+        }
+        const j = await r.json() as any;
+        document.getElementById('job-content')!.classList.remove('hidden');
+
+        document.getElementById('job-category')!.textContent = j.category;
+        document.getElementById('job-title')!.textContent = j.title;
+        document.getElementById('job-company')!.textContent = j.company;
+        document.getElementById('job-location')!.textContent = j.location || '';
+        if (j.remote) {
+          const remoteTag = document.createElement('span');
+          remoteTag.className = 'text-[11px] font-display tracking-wide border border-accent/20 text-accent/60 px-2.5 py-1';
+          remoteTag.textContent = 'Remote';
+          document.getElementById('job-location')!.after(remoteTag);
+        }
+        document.getElementById('job-type')!.textContent = j.type;
+        document.getElementById('job-date')!.textContent = new Date(j.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        document.getElementById('job-description')!.textContent = j.description ?? '';
+
+        const tagsEl = document.getElementById('job-tags')!;
+        (j.skills ?? []).forEach((s: string) => {
+          const span = document.createElement('span');
+          span.className = 'text-[11px] px-2.5 py-1 border border-accent/20 text-accent/60 font-display tracking-wide';
+          span.textContent = s;
+          tagsEl.appendChild(span);
+        });
+        (j.tags ?? []).forEach((t: string) => {
+          const span = document.createElement('span');
+          span.className = 'text-[11px] px-2.5 py-1 border border-[#1a1a22] text-[#555] font-display tracking-wide';
+          span.textContent = t;
+          tagsEl.appendChild(span);
+        });
+
+        document.title = `${j.title} at ${j.company} | Sustainability Jobs`;
+
+        const applyBtn = document.getElementById('apply-btn') as HTMLAnchorElement;
+        if (j.apply_url) {
+          applyBtn.href = j.apply_url;
+          applyBtn.target = '_blank';
+          applyBtn.rel = 'noopener';
+          applyBtn.textContent = 'Apply on Site →';
+        } else {
+          applyBtn.href = `/apply?id=${j.id}`;
+        }
+      })
+      .catch(() => {
+        document.getElementById('job-loading')!.classList.add('hidden');
+        document.getElementById('job-notfound')!.classList.remove('hidden');
+      });
+  }
+</script>

@@ -1,0 +1,257 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<BaseLayout
+  title="Sustainability Jobs | C22"
+  description="Find and post sustainability jobs in clean energy, climate tech, ESG, environmental science, green finance, and more. Free forever."
+>
+  <Nav />
+
+  <main>
+    <!-- Hero -->
+    <section class="relative pt-32 pb-16 overflow-hidden">
+      <div class="absolute inset-0 pointer-events-none" aria-hidden="true">
+        <div class="absolute inset-0" style="background-image: linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px); background-size: 80px 80px;"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full" style="background: radial-gradient(ellipse at center, rgba(0,229,255,0.04) 0%, transparent 70%);"></div>
+      </div>
+
+      <div class="relative max-w-[1200px] mx-auto px-6 lg:px-10">
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
+          <div>
+            <div class="section-rule mb-4"></div>
+            <span class="tag">Sustainability Jobs</span>
+            <h1 class="font-display font-bold text-[#f0f0f0] leading-tight tracking-tight mt-4" style="font-size: clamp(2rem, 5vw, 3.5rem);">
+              Work that matters.<br />
+              <span class="text-[#555]">For the planet.</span>
+            </h1>
+            <p class="text-[14px] text-[#666] mt-3 max-w-[420px] leading-relaxed">
+              Free forever. No recruiters, no paywalls. Just sustainability jobs worth doing.
+            </p>
+          </div>
+          <div class="flex gap-3 shrink-0">
+            <a href="/auth?mode=signup&role=employer"
+              class="inline-flex items-center gap-2 px-5 py-3 text-[12px] font-display font-medium tracking-widest uppercase bg-accent text-[#080808] hover:bg-white transition-colors duration-200"
+              style="clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);">
+              Post a Job →
+            </a>
+            <a href="/auth?mode=signin"
+              id="nav-signin"
+              class="inline-flex items-center gap-2 px-5 py-3 text-[12px] font-display font-medium tracking-widest uppercase border border-[#1a1a22] text-[#888] hover:border-accent/50 hover:text-accent transition-all duration-200">
+              Sign In
+            </a>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="flex flex-col gap-4 mb-10">
+          <!-- Search -->
+          <input
+            id="search"
+            type="text"
+            placeholder="Search roles, companies, keywords…"
+            class="w-full bg-transparent border border-[#1a1a22] px-5 py-3 text-[14px] text-[#f0f0f0] placeholder-[#333] focus:outline-none focus:border-accent/50 transition-colors font-display"
+          />
+
+          <!-- Category tabs -->
+          <div class="flex flex-wrap gap-2" id="cat-filters">
+            {['All', 'Clean Energy', 'Climate Tech', 'ESG & Reporting', 'Environmental Science', 'Green Finance', 'Circular Economy'].map((cat, i) => (
+              <button
+                data-cat={cat}
+                class={`cat-btn text-[11px] font-display tracking-[0.12em] uppercase px-3 py-1.5 border transition-all duration-200 ${i === 0 ? 'border-accent text-accent' : 'border-[#1a1a22] text-[#555] hover:border-[#333] hover:text-[#888]'}`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          <!-- Type + Remote filters -->
+          <div class="flex flex-wrap gap-2">
+            {['All Types', 'Full-time', 'Part-time', 'Contract', 'Internship'].map((t, i) => (
+              <button
+                data-type={t}
+                class={`type-btn text-[11px] font-display tracking-[0.12em] uppercase px-3 py-1.5 border transition-all duration-200 ${i === 0 ? 'border-accent/60 text-accent/60' : 'border-[#1a1a22] text-[#444] hover:border-[#2a2a2a] hover:text-[#666]'}`}
+              >
+                {t}
+              </button>
+            ))}
+            <div class="w-px bg-[#1a1a22] mx-1"></div>
+            <button
+              id="remote-toggle"
+              class="text-[11px] font-display tracking-[0.12em] uppercase px-3 py-1.5 border border-[#1a1a22] text-[#444] hover:border-[#2a2a2a] hover:text-[#666] transition-all duration-200"
+            >
+              Remote Only
+            </button>
+          </div>
+        </div>
+
+        <!-- Job list -->
+        <div id="jobs-loading" class="text-center py-20 text-[#444] font-display text-[13px] tracking-widest uppercase">
+          Loading jobs…
+        </div>
+        <div id="jobs-empty" class="hidden text-center py-20 border border-dashed border-[#1a1a22]">
+          <p class="text-[14px] text-[#555]">No jobs match your filters.</p>
+          <p class="text-[13px] text-[#333] mt-1">Try adjusting your search or <a href="/auth?mode=signup&role=employer" class="text-accent hover:text-white transition-colors">post one →</a></p>
+        </div>
+        <div id="jobs-list" class="space-y-px hidden"></div>
+
+        <!-- Post CTA -->
+        <div class="mt-10 p-8 border border-dashed border-[#1a1a22] text-center">
+          <p class="text-[14px] text-[#555] mb-1">Hiring in sustainability?</p>
+          <p class="text-[14px] text-[#888]">
+            Post your role for free.
+            <a href="/auth?mode=signup&role=employer" class="text-accent hover:text-white transition-colors ml-1">Post a Job →</a>
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<script>
+  let allJobs: any[] = [];
+  let activeCat = 'All';
+  let activeType = 'All Types';
+  let remoteOnly = false;
+  let searchQuery = '';
+
+  const listEl = document.getElementById('jobs-list')!;
+  const loadingEl = document.getElementById('jobs-loading')!;
+  const emptyEl = document.getElementById('jobs-empty')!;
+
+  function timeAgo(dateStr: string) {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const days = Math.floor(diff / 86400000);
+    if (days === 0) return 'Today';
+    if (days === 1) return 'Yesterday';
+    if (days < 7) return `${days}d ago`;
+    if (days < 30) return `${Math.floor(days / 7)}w ago`;
+    return `${Math.floor(days / 30)}mo ago`;
+  }
+
+  function renderJobs(jobs: any[]) {
+    if (jobs.length === 0) {
+      listEl.classList.add('hidden');
+      emptyEl.classList.remove('hidden');
+      return;
+    }
+    emptyEl.classList.add('hidden');
+    listEl.classList.remove('hidden');
+    listEl.innerHTML = jobs.map(j => `
+      <a href="${j.apply_url ? j.apply_url : `/view?id=${j.id}`}" ${j.apply_url ? 'target="_blank" rel="noopener"' : ''} class="group block border border-[#1a1a22] hover:border-[#2a2a2a] bg-[#080808] hover:bg-[#0c0c0c] transition-all duration-300 relative overflow-hidden">
+        <div class="p-7 md:p-8">
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div class="flex-1">
+              <div class="flex flex-wrap items-center gap-2 mb-2">
+                <span class="text-[10px] font-display tracking-[0.15em] uppercase px-2 py-0.5 border border-[#00e5ff]/20 text-accent/70">${j.category}</span>
+                <span class="text-[10px] font-display tracking-wide border border-[#1a1a22] text-[#444] px-2 py-0.5">${j.type}</span>
+                ${j.remote ? `<span class="text-[10px] font-display tracking-wide border border-accent/20 text-accent/60 px-2 py-0.5">Remote</span>` : ''}
+                <span class="text-[10px] text-[#333] font-display">${timeAgo(j.created_at)}</span>
+              </div>
+              <h3 class="font-display font-bold text-[#f0f0f0] text-[17px] tracking-tight mb-1 group-hover:text-accent transition-colors duration-300">${j.title}</h3>
+              <div class="text-[13px] text-[#666] mb-2">${j.company}${j.location ? ` · ${j.location}` : ''}</div>
+              <p class="text-[13px] text-[#555] leading-relaxed line-clamp-2">${j.description ?? ''}</p>
+              ${j.skills && j.skills.length ? `
+              <div class="flex flex-wrap gap-1.5 mt-3">
+                ${j.skills.map((s: string) => `<span class="text-[10px] px-2 py-0.5 border border-accent/15 text-accent/50 font-display tracking-wide">${s}</span>`).join('')}
+              </div>` : ''}
+              ${j.tags && j.tags.length ? `
+              <div class="flex flex-wrap gap-1.5 mt-2">
+                ${j.tags.map((t: string) => `<span class="text-[10px] px-2 py-0.5 border border-[#1a1a22] text-[#444] font-display tracking-wide">${t}</span>`).join('')}
+              </div>` : ''}
+            </div>
+            <span class="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 text-[11px] font-display tracking-widest uppercase border border-[#1a1a22] text-[#666] group-hover:border-accent group-hover:text-accent transition-all duration-200 self-start">
+              ${j.apply_url ? 'Apply on Site' : 'View &amp; Apply'}
+              <svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M1 7H13M13 7L7 1M13 7L7 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </div>
+        </div>
+        <div class="absolute bottom-0 left-0 right-0 h-px bg-accent scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+      </a>
+    `).join('');
+  }
+
+  function filter() {
+    const q = searchQuery.toLowerCase();
+    const filtered = allJobs.filter(j => {
+      const matchCat = activeCat === 'All' || j.category === activeCat;
+      const matchType = activeType === 'All Types' || j.type === activeType;
+      const matchRemote = !remoteOnly || j.remote;
+      const matchSearch = !q || j.title.toLowerCase().includes(q) || j.company.toLowerCase().includes(q) || (j.description ?? '').toLowerCase().includes(q);
+      return matchCat && matchType && matchRemote && matchSearch;
+    });
+    renderJobs(filtered);
+  }
+
+  document.querySelectorAll('.cat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeCat = (btn as HTMLElement).dataset.cat!;
+      document.querySelectorAll('.cat-btn').forEach(b => {
+        b.classList.toggle('border-accent', (b as HTMLElement).dataset.cat === activeCat);
+        b.classList.toggle('text-accent', (b as HTMLElement).dataset.cat === activeCat);
+        b.classList.toggle('border-[#1a1a22]', (b as HTMLElement).dataset.cat !== activeCat);
+        b.classList.toggle('text-[#555]', (b as HTMLElement).dataset.cat !== activeCat);
+      });
+      filter();
+    });
+  });
+
+  document.querySelectorAll('.type-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeType = (btn as HTMLElement).dataset.type!;
+      document.querySelectorAll('.type-btn').forEach(b => {
+        const active = (b as HTMLElement).dataset.type === activeType;
+        b.classList.toggle('border-accent/60', active);
+        b.classList.toggle('text-accent/60', active);
+        b.classList.toggle('border-[#1a1a22]', !active);
+        b.classList.toggle('text-[#444]', !active);
+      });
+      filter();
+    });
+  });
+
+  document.getElementById('remote-toggle')!.addEventListener('click', (btn) => {
+    remoteOnly = !remoteOnly;
+    const el = btn.target as HTMLElement;
+    el.classList.toggle('border-accent/60', remoteOnly);
+    el.classList.toggle('text-accent/60', remoteOnly);
+    el.classList.toggle('border-[#1a1a22]', !remoteOnly);
+    el.classList.toggle('text-[#444]', !remoteOnly);
+    filter();
+  });
+
+  document.getElementById('search')!.addEventListener('input', (e) => {
+    searchQuery = (e.target as HTMLInputElement).value;
+    filter();
+  });
+
+  async function checkAuth() {
+    try {
+      const res = await fetch('/api/auth/me', { credentials: 'include' });
+      if (res.ok) {
+        const user = await res.json() as { role: string };
+        const signinEl = document.getElementById('nav-signin')!;
+        signinEl.textContent = 'My Dashboard';
+        signinEl.setAttribute('href', user.role === 'employer' ? '/employer/dashboard' : '/seeker/dashboard');
+      }
+    } catch {}
+  }
+
+  async function loadJobs() {
+    try {
+      const res = await fetch('/api/jobs', { credentials: 'include' });
+      allJobs = await res.json() as any[];
+      loadingEl.classList.add('hidden');
+      filter();
+    } catch {
+      loadingEl.textContent = 'Failed to load jobs.';
+    }
+  }
+
+  checkAuth();
+  loadJobs();
+</script>

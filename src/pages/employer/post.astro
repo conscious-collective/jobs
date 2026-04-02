@@ -1,0 +1,245 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+
+const categories = ['Clean Energy', 'Climate Tech', 'ESG & Reporting', 'Environmental Science', 'Green Finance', 'Circular Economy'];
+const types = ['Full-time', 'Part-time', 'Contract', 'Internship'];
+const SKILLS = [
+  'Carbon Accounting', 'Life Cycle Assessment (LCA)', 'ESG Reporting', 'CSRD Compliance',
+  'GRI Standards', 'TCFD Framework', 'SBTi', 'Carbon Markets', 'Scope 1, 2 & 3 Emissions',
+  'Renewable Energy', 'Climate Risk Analysis', 'Sustainability Strategy', 'Net Zero Planning',
+  'Supply Chain Sustainability', 'Environmental Impact Assessment', 'Green Finance',
+  'Impact Investing', 'Circular Economy', 'Biodiversity & Nature', 'Water Stewardship',
+  'Sustainability Data & Analytics', 'Climate Policy', 'Stakeholder Engagement',
+  'Carbon Capture & Storage', 'Clean Energy Systems', 'Sustainable Agriculture',
+  'Climate Tech', 'Environmental Science', 'Just Transition', 'B Corp / Certifications',
+];
+---
+
+<BaseLayout
+  title="Post a Job | Sustainability Jobs"
+  description="Post a sustainability job for free. Reach thousands of climate-focused professionals."
+>
+  <Nav />
+
+  <main class="pt-28 pb-24">
+    <div class="max-w-[700px] mx-auto px-6">
+
+      <div id="loading" class="py-20 text-center text-[#444] font-display text-[13px] tracking-widest uppercase">
+        Loading…
+      </div>
+
+      <div id="form-content" class="hidden">
+        <a href="/employer/dashboard" class="inline-flex items-center gap-2 text-[12px] text-[#444] hover:text-accent transition-colors font-display tracking-wider uppercase mb-10">
+          <svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M13 7H1M1 7L7 1M1 7L7 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Dashboard
+        </a>
+
+        <div class="section-rule mb-4"></div>
+        <span class="tag">Post a Job</span>
+        <h1 class="font-display font-bold text-[#f0f0f0] text-2xl tracking-tight mt-4 mb-2">Create a listing</h1>
+        <p class="text-[13px] text-[#555] mb-10">Free, always. Your job will be visible immediately on the board.</p>
+
+        <form id="post-form" class="space-y-8">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-7">
+            <div>
+              <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Job Title *</label>
+              <input type="text" id="title" required placeholder="e.g. Carbon Analyst"
+                class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Company Name *</label>
+              <input type="text" id="company" required placeholder="Acme Climate Co."
+                class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-7">
+            <div>
+              <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Location</label>
+              <input type="text" id="location" placeholder="London, New York, Berlin…"
+                class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Job Type *</label>
+              <select id="type" required
+                class="w-full bg-[#060608] border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] focus:outline-none focus:border-accent transition-colors appearance-none">
+                <option value="" disabled selected>Select type</option>
+                {types.map(t => <option value={t}>{t}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="flex items-center gap-3 cursor-pointer group">
+              <div id="remote-box"
+                class="w-5 h-5 border border-[#1a1a22] flex items-center justify-center transition-all duration-200 group-hover:border-accent/50">
+                <svg id="remote-check" class="hidden" width="10" height="10" viewBox="0 0 10 10" fill="none">
+                  <path d="M1.5 5L4 7.5L8.5 2.5" stroke="#00e5ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <span class="text-[13px] text-[#888] font-display group-hover:text-[#f0f0f0] transition-colors">This is a remote position</span>
+            </label>
+            <input type="hidden" id="remote" value="false" />
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-3">Category *</label>
+            <div class="flex flex-wrap gap-2" id="cat-btns">
+              {categories.map(c => (
+                <button type="button" data-cat={c}
+                  class="cat-btn text-[11px] font-display tracking-[0.12em] uppercase px-3 py-1.5 border border-[#1a1a22] text-[#555] hover:border-[#333] hover:text-[#888] transition-all duration-200">
+                  {c}
+                </button>
+              ))}
+            </div>
+            <input type="hidden" id="category" required />
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Job Description *</label>
+            <textarea id="description" rows="8" required placeholder="Describe the role, responsibilities, requirements, and what makes it special..."
+              class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors resize-none"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-3">
+              Required Skills <span class="text-[#333]">(select all that apply)</span>
+            </label>
+            <div class="flex flex-wrap gap-2" id="skills-picker">
+              {SKILLS.map(s => (
+                <button type="button" data-skill={s}
+                  class="skill-btn text-[10px] font-display tracking-[0.1em] uppercase px-2.5 py-1.5 border border-[#1a1a22] text-[#444] hover:border-[#333] hover:text-[#888] transition-all duration-150">
+                  {s}
+                </button>
+              ))}
+            </div>
+            <p id="skills-count" class="text-[11px] text-[#333] mt-2">0 selected</p>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Additional Tags <span class="text-[#333]">(comma-separated)</span></label>
+            <input type="text" id="tags" placeholder="e.g. Python, GIS, Stakeholder Comms"
+              class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">
+              External Apply URL <span class="text-[#333]">(optional — if set, applicants apply on your site)</span>
+            </label>
+            <input type="url" id="apply-url" placeholder="https://yourcompany.com/careers/job-123"
+              class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+            <p class="text-[11px] text-[#333] mt-2">Leave blank to use the built-in application form.</p>
+          </div>
+
+          <div id="post-error" class="hidden text-[13px] text-[#ff6b35]"></div>
+
+          <button type="submit" id="post-btn"
+            class="inline-flex items-center gap-2 px-7 py-4 text-[13px] font-display font-medium tracking-widest uppercase bg-accent text-[#080808] hover:bg-white transition-colors duration-200 disabled:opacity-40"
+            style="clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);">
+            Publish Job →
+          </button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<script>
+  let selectedCat = '';
+
+  async function init() {
+    const meRes = await fetch('/api/auth/me', { credentials: 'include' });
+    if (!meRes.ok) { window.location.href = '/auth?mode=signin'; return; }
+    const me = await meRes.json() as { role: string };
+    if (me.role !== 'employer') { window.location.href = '/'; return; }
+
+    document.getElementById('loading')!.classList.add('hidden');
+    document.getElementById('form-content')!.classList.remove('hidden');
+
+    const selectedSkills = new Set<string>();
+    const skillsCount = document.getElementById('skills-count')!;
+    document.querySelectorAll('.skill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const skill = (btn as HTMLElement).dataset.skill!;
+        if (selectedSkills.has(skill)) {
+          selectedSkills.delete(skill);
+          btn.classList.remove('border-accent', 'text-accent', 'bg-accent/5');
+          btn.classList.add('border-[#1a1a22]', 'text-[#444]');
+        } else {
+          selectedSkills.add(skill);
+          btn.classList.add('border-accent', 'text-accent', 'bg-accent/5');
+          btn.classList.remove('border-[#1a1a22]', 'text-[#444]');
+        }
+        skillsCount.textContent = `${selectedSkills.size} selected`;
+      });
+    });
+
+    const remoteBox = document.getElementById('remote-box')!;
+    const remoteCheck = document.getElementById('remote-check')!;
+    const remoteInput = document.getElementById('remote') as HTMLInputElement;
+    remoteBox.closest('label')!.addEventListener('click', () => {
+      const isRemote = remoteInput.value === 'true';
+      remoteInput.value = isRemote ? 'false' : 'true';
+      remoteCheck.classList.toggle('hidden', isRemote);
+      remoteBox.classList.toggle('border-accent/50', !isRemote);
+    });
+
+    document.querySelectorAll('.cat-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectedCat = (btn as HTMLElement).dataset.cat!;
+        (document.getElementById('category') as HTMLInputElement).value = selectedCat;
+        document.querySelectorAll('.cat-btn').forEach(b => {
+          const active = (b as HTMLElement).dataset.cat === selectedCat;
+          b.classList.toggle('border-accent', active);
+          b.classList.toggle('text-accent', active);
+          b.classList.toggle('border-[#1a1a22]', !active);
+          b.classList.toggle('text-[#555]', !active);
+        });
+      });
+    });
+
+    document.getElementById('post-form')!.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('post-btn') as HTMLButtonElement;
+      const errEl = document.getElementById('post-error')!;
+      btn.disabled = true; btn.textContent = 'Publishing…';
+      errEl.classList.add('hidden');
+
+      const tagsRaw = (document.getElementById('tags') as HTMLInputElement).value;
+      const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
+
+      const res = await fetch('/api/jobs', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: (document.getElementById('title') as HTMLInputElement).value,
+          company: (document.getElementById('company') as HTMLInputElement).value,
+          location: (document.getElementById('location') as HTMLInputElement).value,
+          remote: (document.getElementById('remote') as HTMLInputElement).value === 'true',
+          type: (document.getElementById('type') as HTMLSelectElement).value,
+          category: selectedCat,
+          description: (document.getElementById('description') as HTMLTextAreaElement).value,
+          tags,
+          skills: Array.from(selectedSkills),
+          apply_url: (document.getElementById('apply-url') as HTMLInputElement).value || undefined,
+        }),
+      });
+
+      const data = await res.json() as any;
+      if (res.ok) {
+        window.location.href = `/view?id=${data.id}`;
+      } else {
+        errEl.textContent = data.error ?? 'Something went wrong.';
+        errEl.classList.remove('hidden');
+        btn.disabled = false; btn.textContent = 'Publish Job →';
+      }
+    });
+  }
+
+  init();
+</script>

@@ -1,0 +1,135 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+---
+
+<BaseLayout
+  title="Employer Dashboard | Sustainability Jobs"
+  description="Manage your job postings and view applicants."
+>
+  <Nav />
+
+  <main class="pt-28 pb-24">
+    <div class="max-w-[1000px] mx-auto px-6 lg:px-10">
+
+      <div id="loading" class="py-20 text-center text-[#444] font-display text-[13px] tracking-widest uppercase">
+        Loading…
+      </div>
+
+      <div id="dashboard" class="hidden">
+
+        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-12">
+          <div>
+            <div class="section-rule mb-4"></div>
+            <span class="tag">Employer Dashboard</span>
+            <h1 class="font-display font-bold text-[#f0f0f0] text-2xl tracking-tight mt-4">
+              Your Jobs
+            </h1>
+            <p id="user-email" class="text-[13px] text-[#444] mt-1"></p>
+          </div>
+          <div class="flex gap-3">
+            <a href="/employer/post"
+              class="inline-flex items-center gap-2 px-5 py-3 text-[12px] font-display font-medium tracking-widest uppercase bg-accent text-[#080808] hover:bg-white transition-colors"
+              style="clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);">
+              + Post a Job
+            </a>
+            <button id="signout-btn"
+              class="px-5 py-3 text-[12px] font-display tracking-widest uppercase border border-[#1a1a22] text-[#555] hover:border-accent/50 hover:text-accent transition-all">
+              Sign Out
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-px bg-[#1a1a22] mb-10">
+          <div class="bg-[#060608] p-6">
+            <div class="text-[28px] font-display font-bold text-accent" id="stat-total">0</div>
+            <div class="text-[12px] text-[#555] font-display tracking-widest uppercase mt-1">Total Jobs</div>
+          </div>
+          <div class="bg-[#060608] p-6">
+            <div class="text-[28px] font-display font-bold text-[#f0f0f0]" id="stat-active">0</div>
+            <div class="text-[12px] text-[#555] font-display tracking-widest uppercase mt-1">Active</div>
+          </div>
+          <div class="bg-[#060608] p-6">
+            <div class="text-[28px] font-display font-bold text-[#f0f0f0]" id="stat-apps">0</div>
+            <div class="text-[12px] text-[#555] font-display tracking-widest uppercase mt-1">Applicants</div>
+          </div>
+        </div>
+
+        <div id="jobs-empty" class="hidden text-center py-16 border border-dashed border-[#1a1a22]">
+          <p class="text-[14px] text-[#555] mb-1">No jobs posted yet.</p>
+          <a href="/employer/post" class="text-accent hover:text-white transition-colors text-[13px]">Post your first job →</a>
+        </div>
+
+        <div id="jobs-list" class="space-y-px"></div>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<script>
+  async function init() {
+    const meRes = await fetch('/api/auth/me', { credentials: 'include' });
+    if (!meRes.ok) { window.location.href = '/auth?mode=signin'; return; }
+    const me = await meRes.json() as { email: string; role: string };
+    if (me.role !== 'employer') { window.location.href = '/seeker/dashboard'; return; }
+
+    document.getElementById('loading')!.classList.add('hidden');
+    document.getElementById('dashboard')!.classList.remove('hidden');
+    document.getElementById('user-email')!.textContent = me.email;
+
+    const res = await fetch('/api/employer/jobs', { credentials: 'include' });
+    const jobs = await res.json() as any[];
+
+    const total = jobs.length;
+    const active = jobs.filter(j => j.status === 'active').length;
+    const apps = jobs.reduce((s, j) => s + (j.applicant_count ?? 0), 0);
+
+    document.getElementById('stat-total')!.textContent = String(total);
+    document.getElementById('stat-active')!.textContent = String(active);
+    document.getElementById('stat-apps')!.textContent = String(apps);
+
+    const listEl = document.getElementById('jobs-list')!;
+
+    if (jobs.length === 0) {
+      document.getElementById('jobs-empty')!.classList.remove('hidden');
+    } else {
+      listEl.innerHTML = jobs.map(j => `
+        <div class="group border border-[#1a1a22] hover:border-[#2a2a2a] bg-[#080808] hover:bg-[#0c0c0c] transition-all duration-300 relative overflow-hidden">
+          <div class="p-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex-1">
+              <div class="flex flex-wrap items-center gap-2 mb-2">
+                <span class="text-[10px] font-display tracking-[0.15em] uppercase px-2 py-0.5 border border-[#00e5ff]/20 text-accent/70">${j.category}</span>
+                <span class="text-[10px] font-display tracking-wide border border-[#1a1a22] text-[#444] px-2 py-0.5">${j.type}</span>
+                <span class="text-[10px] font-display px-2 py-0.5 border ${j.status === 'active' ? 'border-emerald-800/40 text-emerald-600' : j.status === 'suspended' ? 'border-[#ff6b35]/30 text-[#ff6b35]' : 'border-[#1a1a22] text-[#444]'}">${j.status}</span>
+              ${j.status === 'suspended' ? `<span class="text-[10px] text-[#555]">Not visible on board</span>` : ''}
+              </div>
+              <h3 class="font-display font-bold text-[#f0f0f0] text-[16px] tracking-tight">${j.title}</h3>
+              <p class="text-[13px] text-[#555] mt-1">${j.location || 'Remote'} · Posted ${new Date(j.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+            </div>
+            <div class="flex items-center gap-3 shrink-0">
+              <div class="text-center border border-[#1a1a22] px-5 py-3">
+                <div class="text-xl font-display font-bold text-[#f0f0f0]">${j.applicant_count ?? 0}</div>
+                <div class="text-[10px] text-[#444] font-display tracking-widest uppercase">Applicants</div>
+              </div>
+              <a href="/employer/applicants?job_id=${j.id}"
+                class="inline-flex items-center gap-2 px-4 py-3 text-[11px] font-display tracking-widest uppercase border border-[#1a1a22] text-[#666] hover:border-accent hover:text-accent transition-all whitespace-nowrap">
+                View Applicants →
+              </a>
+            </div>
+          </div>
+          <div class="absolute bottom-0 left-0 right-0 h-px bg-accent scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('signout-btn')!.addEventListener('click', async () => {
+      await fetch('/api/auth/signout', { method: 'POST', credentials: 'include' });
+      window.location.href = '/';
+    });
+  }
+
+  init();
+</script>
