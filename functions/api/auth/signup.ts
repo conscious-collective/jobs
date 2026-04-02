@@ -20,6 +20,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const existing = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first();
   if (existing) return err('Email already registered', 409);
 
+  if (!env.JWT_SECRET) return err('Server misconfiguration', 500);
+
   const id = crypto.randomUUID();
   const password_hash = await hashPassword(password);
 
