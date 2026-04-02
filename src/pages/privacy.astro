@@ -1,0 +1,141 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<BaseLayout
+  title="Privacy Policy | C22 Jobs"
+  description="How C22 Foundation collects, uses, and protects your data on C22 Jobs."
+>
+  <Nav />
+
+  <main class="pt-28 pb-24">
+    <div class="max-w-[720px] mx-auto px-6 lg:px-10">
+
+      <div class="section-rule mb-4"></div>
+      <span class="tag">Legal</span>
+      <h1 class="font-display font-bold text-[#f0f0f0] text-3xl tracking-tight mt-4 mb-2">Privacy Policy</h1>
+      <p class="text-[13px] text-[#444] mb-10">Last updated: April 2, 2026</p>
+
+      <!-- Who we are -->
+      <div class="border-t border-[#1a1a22] pt-10 mb-12">
+        <h2 class="font-display font-bold text-[#f0f0f0] text-lg tracking-tight mb-4">Who we are</h2>
+        <p class="text-[14px] text-[#888] leading-relaxed">
+          C22 Jobs is operated by <strong class="text-[#aaa]">C22 Foundation</strong>. When this policy says "we", "us", or "our", it means C22 Foundation. Questions or requests about your data can be sent to <a href="mailto:policy@c22.space" class="text-accent hover:text-white transition-colors">policy@c22.space</a>.
+        </p>
+      </div>
+
+      <!-- What we collect -->
+      <div class="border-t border-[#1a1a22] pt-10 mb-12">
+        <h2 class="font-display font-bold text-[#f0f0f0] text-lg tracking-tight mb-4">What we collect</h2>
+        <p class="text-[14px] text-[#888] leading-relaxed mb-6">We only collect what is necessary to operate the platform.</p>
+
+        <div class="space-y-6">
+          <div>
+            <h3 class="text-[12px] font-display tracking-widest uppercase text-accent mb-2">Account data</h3>
+            <p class="text-[14px] text-[#888] leading-relaxed">
+              When you register, we store your email address, a hashed (never plain-text) password, your role (job seeker or employer), and — for employers — your company name and website. You can optionally add a short bio to your seeker profile.
+            </p>
+          </div>
+          <div>
+            <h3 class="text-[12px] font-display tracking-widest uppercase text-accent mb-2">Job listings</h3>
+            <p class="text-[14px] text-[#888] leading-relaxed">
+              Employers submit job titles, descriptions, location, salary, and a link to apply. This content is public by design.
+            </p>
+          </div>
+          <div>
+            <h3 class="text-[12px] font-display tracking-widest uppercase text-accent mb-2">Applications</h3>
+            <p class="text-[14px] text-[#888] leading-relaxed">
+              When a seeker applies to a job, we store the cover letter text, and any LinkedIn or portfolio URLs they voluntarily provide. This data is shared with the employer who posted the role and no one else.
+            </p>
+          </div>
+          <div>
+            <h3 class="text-[12px] font-display tracking-widest uppercase text-accent mb-2">Authentication cookies</h3>
+            <p class="text-[14px] text-[#888] leading-relaxed">
+              We set a single <code class="text-[13px] bg-[#1a1a22] px-1.5 py-0.5">token</code> cookie to keep you signed in. It is HttpOnly, Secure, and expires after 30 days. We do not use any advertising or tracking cookies.
+            </p>
+          </div>
+          <div>
+            <h3 class="text-[12px] font-display tracking-widest uppercase text-accent mb-2">Transactional email</h3>
+            <p class="text-[14px] text-[#888] leading-relaxed">
+              We send emails only when you trigger them — account confirmation and password reset. We use <strong class="text-[#aaa]">Resend</strong> to deliver these. Your email address is passed to Resend for this purpose only.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- What we don't collect -->
+      <div class="border-t border-[#1a1a22] pt-10 mb-12">
+        <h2 class="font-display font-bold text-[#f0f0f0] text-lg tracking-tight mb-4">What we don't collect</h2>
+        <ul class="space-y-2 text-[14px] text-[#888] leading-relaxed list-none">
+          <li class="flex gap-3"><span class="text-accent flex-shrink-0">—</span> No analytics or tracking scripts of any kind</li>
+          <li class="flex gap-3"><span class="text-accent flex-shrink-0">—</span> No advertising identifiers or third-party pixels</li>
+          <li class="flex gap-3"><span class="text-accent flex-shrink-0">—</span> No payment information (the platform is free)</li>
+          <li class="flex gap-3"><span class="text-accent flex-shrink-0">—</span> No device fingerprints or behavioral profiling</li>
+        </ul>
+      </div>
+
+      <!-- How we use your data -->
+      <div class="border-t border-[#1a1a22] pt-10 mb-12">
+        <h2 class="font-display font-bold text-[#f0f0f0] text-lg tracking-tight mb-4">How we use your data</h2>
+        <ul class="space-y-2 text-[14px] text-[#888] leading-relaxed list-none">
+          <li class="flex gap-3"><span class="text-accent flex-shrink-0">—</span> To authenticate you and maintain your session</li>
+          <li class="flex gap-3"><span class="text-accent flex-shrink-0">—</span> To display your job listings or applications to the relevant parties</li>
+          <li class="flex gap-3"><span class="text-accent flex-shrink-0">—</span> To send password reset emails you request</li>
+          <li class="flex gap-3"><span class="text-accent flex-shrink-0">—</span> To moderate content that violates our Terms of Use</li>
+        </ul>
+        <p class="text-[14px] text-[#888] leading-relaxed mt-6">
+          We do not sell, rent, or share your personal data with any third party for commercial purposes.
+        </p>
+      </div>
+
+      <!-- Data storage -->
+      <div class="border-t border-[#1a1a22] pt-10 mb-12">
+        <h2 class="font-display font-bold text-[#f0f0f0] text-lg tracking-tight mb-4">Data storage &amp; security</h2>
+        <p class="text-[14px] text-[#888] leading-relaxed mb-4">
+          All data is stored in a Cloudflare D1 database and served via Cloudflare's global network. Passwords are hashed with PBKDF2-SHA256 before storage and are never logged or transmitted in plain text. All connections are encrypted in transit via HTTPS.
+        </p>
+        <p class="text-[14px] text-[#888] leading-relaxed">
+          While we take reasonable precautions, no system is completely secure. Please use a unique password for your account.
+        </p>
+      </div>
+
+      <!-- Your rights -->
+      <div class="border-t border-[#1a1a22] pt-10 mb-12">
+        <h2 class="font-display font-bold text-[#f0f0f0] text-lg tracking-tight mb-4">Your rights</h2>
+        <p class="text-[14px] text-[#888] leading-relaxed mb-4">You can:</p>
+        <ul class="space-y-2 text-[14px] text-[#888] leading-relaxed list-none mb-6">
+          <li class="flex gap-3"><span class="text-accent flex-shrink-0">—</span> Update your profile information at any time from your dashboard</li>
+          <li class="flex gap-3"><span class="text-accent flex-shrink-0">—</span> Request a copy of the personal data we hold about you</li>
+          <li class="flex gap-3"><span class="text-accent flex-shrink-0">—</span> Request deletion of your account and all associated data</li>
+          <li class="flex gap-3"><span class="text-accent flex-shrink-0">—</span> Withdraw any voluntarily-provided information (bio, portfolio URL, etc.)</li>
+        </ul>
+        <p class="text-[14px] text-[#888] leading-relaxed">
+          To exercise any of these rights, email <a href="mailto:policy@c22.space" class="text-accent hover:text-white transition-colors">policy@c22.space</a>. We will respond within 30 days.
+        </p>
+      </div>
+
+      <!-- Changes -->
+      <div class="border-t border-[#1a1a22] pt-10 mb-12">
+        <h2 class="font-display font-bold text-[#f0f0f0] text-lg tracking-tight mb-4">Changes to this policy</h2>
+        <p class="text-[14px] text-[#888] leading-relaxed">
+          If we make material changes, we will update the "Last updated" date at the top of this page. Continued use of C22 Jobs after changes are posted constitutes acceptance of the revised policy.
+        </p>
+      </div>
+
+      <!-- Contact -->
+      <div class="border border-[#1a1a22] p-8 relative overflow-hidden">
+        <div class="absolute top-0 left-0 right-0 h-px" style="background: linear-gradient(90deg, #00e5ff, #a855f7); box-shadow: 0 0 8px rgba(0,229,255,0.4);"></div>
+        <div class="text-[10px] font-display tracking-[0.2em] uppercase text-accent mb-3">Questions?</div>
+        <p class="text-[14px] text-[#888] leading-relaxed mb-4">
+          Contact C22 Foundation at <a href="mailto:policy@c22.space" class="text-accent hover:text-white transition-colors">policy@c22.space</a>.
+        </p>
+        <a href="/terms" class="text-[12px] font-display tracking-widest uppercase text-[#555] hover:text-[#888] transition-colors">Read our Terms of Use →</a>
+      </div>
+
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>

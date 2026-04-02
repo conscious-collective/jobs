@@ -4,10 +4,12 @@ pages_build_output_dir = "dist"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "agent22-jobs"
+database_name = "c22-jobs"
 database_id = "c9fc79ea-60e9-4f1f-ae0f-5a9345231fd2"
 
 # JWT_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD are set as Wrangler secrets
 # Run: wrangler pages secret put JWT_SECRET --project-name c22-jobs
+#      wrangler pages secret put RESEND_API_KEY --project-name c22-jobs
 #      wrangler pages secret put ADMIN_EMAIL --project-name c22-jobs
 #      wrangler pages secret put ADMIN_PASSWORD --project-name c22-jobs
+# DB:  wrangler d1 execute c22-jobs --remote --file=schema.sql
