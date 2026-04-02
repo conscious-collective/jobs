@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "astro build && wrangler pages dev dist/ --env-file .dev.vars",
     "build": "astro build",
-    "deploy": "npm run build && wrangler pages deploy dist/ --env-file .prod.vars",
+    "deploy": "astro build && wrangler pages deploy dist/",
     "preview": "astro preview"
   },
   "dependencies": {
