@@ -13,7 +13,7 @@
     <nav class="hidden md:flex items-center gap-8">
       <a href="/" class="text-[12px] text-[#555] hover:text-[#f0f0f0] transition-colors tracking-[0.1em] uppercase font-display">Browse Jobs</a>
       <a href="/about" class="text-[12px] text-[#555] hover:text-[#f0f0f0] transition-colors tracking-[0.1em] uppercase font-display">About</a>
-      <a href="/employers" class="text-[12px] text-[#555] hover:text-[#f0f0f0] transition-colors tracking-[0.1em] uppercase font-display">For Employers</a>
+      <a id="nav-employers" href="/employers" class="text-[12px] text-[#555] hover:text-[#f0f0f0] transition-colors tracking-[0.1em] uppercase font-display">For Employers</a>
       <a href="/auth?mode=signup&role=employer" class="text-[12px] text-[#555] hover:text-[#f0f0f0] transition-colors tracking-[0.1em] uppercase font-display">Post a Job</a>
       <a id="nav-auth" href="/auth?mode=signin" class="text-[12px] text-[#555] hover:text-[#f0f0f0] transition-colors tracking-[0.1em] uppercase font-display">Sign In</a>
     </nav>
@@ -31,7 +31,7 @@
     <div class="max-w-[1200px] mx-auto px-6 py-6 flex flex-col gap-5">
       <a href="/" class="text-[14px] text-[#666] hover:text-[#f0f0f0] transition-colors tracking-wide font-display uppercase" onclick="document.getElementById('mobile-menu').classList.add('hidden')">Browse Jobs</a>
       <a href="/about" class="text-[14px] text-[#666] hover:text-[#f0f0f0] transition-colors tracking-wide font-display uppercase" onclick="document.getElementById('mobile-menu').classList.add('hidden')">About</a>
-      <a href="/employers" class="text-[14px] text-[#666] hover:text-[#f0f0f0] transition-colors tracking-wide font-display uppercase" onclick="document.getElementById('mobile-menu').classList.add('hidden')">For Employers</a>
+      <a id="nav-employers-mobile" href="/employers" class="text-[14px] text-[#666] hover:text-[#f0f0f0] transition-colors tracking-wide font-display uppercase" onclick="document.getElementById('mobile-menu').classList.add('hidden')">For Employers</a>
       <a href="/auth?mode=signup&role=employer" class="text-[14px] text-[#666] hover:text-[#f0f0f0] transition-colors tracking-wide font-display uppercase" onclick="document.getElementById('mobile-menu').classList.add('hidden')">Post a Job</a>
       <a id="nav-auth-mobile" href="/auth?mode=signin" class="text-[14px] text-accent font-medium font-display" onclick="document.getElementById('mobile-menu').classList.add('hidden')">Sign In</a>
     </div>
@@ -71,6 +71,8 @@
       authEl.setAttribute('href', href);
       authMobileEl.textContent = label;
       authMobileEl.setAttribute('href', href);
+      document.getElementById('nav-employers')?.remove();
+      document.getElementById('nav-employers-mobile')?.remove();
     }
   }).catch(() => {});
 </script>
