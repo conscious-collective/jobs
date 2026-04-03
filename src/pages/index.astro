@@ -129,11 +129,14 @@ import Footer from '../components/Footer.astro';
       listEl.classList.add('hidden'); emptyEl.classList.remove('hidden'); return;
     }
     emptyEl.classList.add('hidden'); listEl.classList.remove('hidden');
-    listEl.innerHTML = jobs.map(j => `
-      <a href="${j.apply_url ? j.apply_url : `/view?id=${j.id}`}" ${j.apply_url ? 'target="_blank" rel="noopener"' : ''} class="group block border border-[#1a1a22] hover:border-[#2a2a2a] bg-[#080808] hover:bg-[#0c0c0c] transition-all duration-300 relative overflow-hidden">
+    listEl.innerHTML = jobs.map(j => {
+      const href = j.apply_url ? j.apply_url : `/view?id=${j.id}`;
+      const target = j.apply_url ? 'target="_blank" rel="noopener"' : '';
+      return `
+      <div data-href="${href}" ${target} class="job-card group cursor-pointer border border-[#1a1a22] hover:border-[#2a2a2a] bg-[#080808] hover:bg-[#0c0c0c] transition-all duration-300 relative overflow-hidden">
         <div class="p-7 md:p-8">
           <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-            <div class="flex-1">
+            <div class="flex-1 min-w-0">
               <div class="flex flex-wrap items-center gap-2 mb-2">
                 <span class="text-[10px] font-display tracking-[0.15em] uppercase px-2 py-0.5 border border-[#00e5ff]/20 text-accent/70">${j.category}</span>
                 <span class="text-[10px] font-display tracking-wide border border-[#1a1a22] text-[#444] px-2 py-0.5">${j.type}</span>
@@ -144,17 +147,28 @@ import Footer from '../components/Footer.astro';
               <div class="text-[13px] text-[#666] mb-2">${j.company}${j.location ? ` · ${j.location}` : ''}${j.salary ? ` · <span class="text-[#888]">${j.salary}</span>` : ''}</div>
               <p class="text-[13px] text-[#555] leading-relaxed line-clamp-2">${j.description ?? ''}</p>
               ${j.skills && j.skills.length ? `<div class="flex flex-wrap gap-1.5 mt-3">${j.skills.map((s: string) => `<span class="text-[10px] px-2 py-0.5 border border-accent/15 text-accent/50 font-display tracking-wide">${s}</span>`).join('')}</div>` : ''}
-              ${j.tags && j.tags.length ? `<div class="flex flex-wrap gap-1.5 mt-2">${j.tags.map((t: string) => `<a href="/?tag=${encodeURIComponent(t)}" onclick="event.preventDefault();event.stopPropagation();window.dispatchEvent(new CustomEvent('filter-tag',{detail:'${t.replace(/'/g, "\\'")}'}));" class="text-[10px] px-2 py-0.5 border border-[#1a1a22] text-[#444] font-display tracking-wide hover:border-accent/40 hover:text-accent transition-colors">${t}</a>`).join('')}</div>` : ''}
+              ${j.tags && j.tags.length ? `<div class="flex flex-wrap gap-1.5 mt-2">${j.tags.map((t: string) => `<button type="button" onclick="event.stopPropagation();window.dispatchEvent(new CustomEvent('filter-tag',{detail:${JSON.stringify(t)}}))" class="text-[10px] px-2 py-0.5 border border-[#1a1a22] text-[#444] font-display tracking-wide hover:border-accent/40 hover:text-accent transition-colors">${t}</button>`).join('')}</div>` : ''}
             </div>
-            <span class="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 text-[11px] font-display tracking-widest uppercase border border-[#1a1a22] text-[#666] group-hover:border-accent group-hover:text-accent transition-all duration-200 self-start">
+            <span class="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 text-[11px] font-display tracking-widest uppercase border border-[#1a1a22] text-[#666] group-hover:border-accent group-hover:text-accent transition-all duration-200 self-start mt-1">
               ${j.apply_url ? 'Apply on Site' : 'View &amp; Apply'}
               <svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M1 7H13M13 7L7 1M13 7L7 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
           </div>
         </div>
         <div class="absolute bottom-0 left-0 right-0 h-px bg-accent scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
-      </a>
-    `).join('');
+      </div>`;
+    }).join('');
+
+    // Wire card clicks (avoid intercepting tag button clicks)
+    listEl.querySelectorAll<HTMLElement>('.job-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        if ((e.target as HTMLElement).closest('button')) return;
+        const href = card.dataset.href!;
+        const isExternal = card.hasAttribute('target');
+        if (isExternal) window.open(href, '_blank', 'noopener');
+        else window.location.href = href;
+      });
+    });
   }
 
   function filter() {
