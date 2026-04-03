@@ -1,0 +1,169 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+const features = [
+  { label: 'Free, always',            body: 'No listing fees, no credits, no paywalls. Post as many roles as you need.' },
+  { label: 'Instant visibility',       body: 'Your listing goes live immediately and appears on the board the moment you publish.' },
+  { label: 'Skills-based filtering',   body: 'Tag roles with specific sustainability skills so the right candidates find you first.' },
+  { label: 'Qualifying questions',     body: 'Screen applicants upfront with custom questions — yes/no, free-text, or required.' },
+  { label: 'Applicant inbox',          body: 'Every application lands in a clean dashboard. Read, shortlist, and message candidates in one place.' },
+  { label: 'Company profile',          body: 'A public profile page showcasing your mission, logo, and all open roles — linked from every listing.' },
+  { label: 'Applicant tracking',       body: 'Track status across all your open roles. See total applicants, active listings, and pipeline at a glance.' },
+  { label: 'Direct messaging',         body: 'Message shortlisted candidates directly inside the platform — no external tools needed.' },
+];
+
+const categories = [
+  'Clean Energy', 'Climate Tech', 'ESG & Reporting',
+  'Environmental Science', 'Green Finance', 'Circular Economy',
+];
+
+const steps = [
+  { n: '01', title: 'Create your account',   body: 'Sign up as an employer in under a minute. No credit card, no commitment.' },
+  { n: '02', title: 'Post your job',          body: 'Fill in the role details, add skills tags, qualifying questions, and an optional apply URL.' },
+  { n: '03', title: 'Review applicants',      body: 'Receive applications directly, message candidates, and move them through your pipeline.' },
+];
+---
+
+<BaseLayout
+  title="For Employers | Sustainability Jobs"
+  description="Post sustainability jobs for free. Reach thousands of climate-focused professionals in clean energy, climate tech, ESG, and more."
+>
+  <Nav />
+
+  <main class="pt-28 pb-24">
+    <div class="max-w-[860px] mx-auto px-6 lg:px-10">
+
+      <!-- Hero -->
+      <div class="mb-20">
+        <div class="section-rule mb-4"></div>
+        <span class="tag">For Employers</span>
+
+        <h1 class="font-display font-bold text-[#f0f0f0] tracking-tight mt-6 mb-5 leading-[1.08]"
+            style="font-size: clamp(2.4rem, 5.5vw, 4rem);">
+          Hire sustainability talent.<br />
+          <span class="text-[#333]">Free, forever.</span>
+        </h1>
+
+        <p class="text-[15px] text-[#666] leading-relaxed max-w-[520px] mb-8">
+          Post your role in minutes. Reach thousands of climate-focused professionals
+          who are actively looking for work that matters.
+        </p>
+
+        <div class="flex flex-wrap gap-3">
+          <a href="/auth?mode=signup&role=employer"
+            class="inline-flex items-center gap-2 px-6 py-3.5 text-[12px] font-display font-medium tracking-widest uppercase bg-accent text-[#080808] hover:bg-white transition-colors duration-200"
+            style="clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);">
+            Post a Job →
+          </a>
+          <a href="/"
+            class="inline-flex items-center gap-2 px-6 py-3.5 text-[12px] font-display tracking-widest uppercase border border-[#1a1a22] text-[#888] hover:border-accent/50 hover:text-accent transition-all duration-200">
+            See the board
+          </a>
+        </div>
+      </div>
+
+      <!-- Features -->
+      <div class="mb-20">
+        <div class="border-t border-[#1a1a22] pt-10 mb-8">
+          <p class="text-[11px] font-display tracking-[0.2em] uppercase text-[#444] mb-1">Everything included</p>
+          <h2 class="font-display font-bold text-[#f0f0f0] text-xl tracking-tight">Built for serious hiring.</h2>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-px bg-[#1a1a22]">
+          {features.map(f => (
+            <div class="bg-[#060608] p-7 group hover:bg-[#0c0c0c] transition-colors duration-200">
+              <div class="flex items-start gap-3 mb-2">
+                <span class="mt-0.5 shrink-0 w-1.5 h-1.5 rounded-full bg-accent/60 group-hover:bg-accent transition-colors duration-200"></span>
+                <p class="text-[13px] font-display font-bold text-[#f0f0f0] tracking-tight">{f.label}</p>
+              </div>
+              <p class="text-[13px] text-[#555] leading-relaxed pl-[18px]">{f.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- How it works -->
+      <div class="mb-20">
+        <div class="border-t border-[#1a1a22] pt-10 mb-10">
+          <p class="text-[11px] font-display tracking-[0.2em] uppercase text-[#444] mb-1">Process</p>
+          <h2 class="font-display font-bold text-[#f0f0f0] text-xl tracking-tight">Up and running in minutes.</h2>
+        </div>
+
+        <div class="space-y-px">
+          {steps.map(s => (
+            <div class="group flex items-start gap-8 border border-[#1a1a22] p-8 hover:border-[#2a2a2a] hover:bg-[#0c0c0c] transition-all duration-200 relative overflow-hidden">
+              <span class="shrink-0 font-display font-bold text-[#1a1a22] group-hover:text-[#2a2a2a] transition-colors"
+                    style="font-size: 3.5rem; line-height: 1; letter-spacing: -0.04em;">{s.n}</span>
+              <div class="pt-2">
+                <p class="font-display font-bold text-[#f0f0f0] text-[16px] tracking-tight mb-2">{s.title}</p>
+                <p class="text-[13px] text-[#666] leading-relaxed">{s.body}</p>
+              </div>
+              <div class="absolute bottom-0 left-0 right-0 h-px bg-accent scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- Ecosystem -->
+      <div class="mb-20">
+        <div class="border-t border-[#1a1a22] pt-10 mb-8">
+          <p class="text-[11px] font-display tracking-[0.2em] uppercase text-[#444] mb-1">Niche-first</p>
+          <h2 class="font-display font-bold text-[#f0f0f0] text-xl tracking-tight mb-3">Built for the sustainability ecosystem.</h2>
+          <p class="text-[13px] text-[#666] leading-relaxed max-w-[520px]">
+            Every listing is categorised within the sustainability space. Candidates come here specifically
+            because they care — no filtering through roles that have nothing to do with climate.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          {categories.map(c => (
+            <span class="text-[11px] font-display tracking-[0.12em] uppercase px-4 py-2 border border-[#1a1a22] text-[#555]">
+              {c}
+            </span>
+          ))}
+        </div>
+
+        <div class="mt-8 grid grid-cols-3 gap-px bg-[#1a1a22]">
+          <div class="bg-[#060608] px-7 py-6 text-center">
+            <p class="font-display font-bold text-accent" style="font-size: 2rem;">Free</p>
+            <p class="text-[11px] text-[#444] font-display tracking-widest uppercase mt-1">Always</p>
+          </div>
+          <div class="bg-[#060608] px-7 py-6 text-center">
+            <p class="font-display font-bold text-[#f0f0f0]" style="font-size: 2rem;">6</p>
+            <p class="text-[11px] text-[#444] font-display tracking-widest uppercase mt-1">Categories</p>
+          </div>
+          <div class="bg-[#060608] px-7 py-6 text-center">
+            <p class="font-display font-bold text-[#f0f0f0]" style="font-size: 2rem;">∞</p>
+            <p class="text-[11px] text-[#444] font-display tracking-widest uppercase mt-1">Job Posts</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="border border-[#1a1a22] p-8 relative overflow-hidden">
+        <div class="absolute top-0 left-0 right-0 h-px" style="background: linear-gradient(90deg, #00e5ff, #a855f7); box-shadow: 0 0 8px rgba(0,229,255,0.4);"></div>
+        <p class="text-[11px] font-display tracking-[0.2em] uppercase text-accent/60 mb-3">Get started</p>
+        <h2 class="font-display font-bold text-[#f0f0f0] text-2xl tracking-tight mb-2">Start hiring today.</h2>
+        <p class="text-[13px] text-[#555] mb-6 max-w-[440px]">
+          Create a free employer account, post your first role, and start receiving applications from sustainability professionals.
+        </p>
+        <div class="flex flex-wrap gap-3">
+          <a href="/auth?mode=signup&role=employer"
+            class="inline-flex items-center gap-2 px-6 py-3 text-[12px] font-display font-medium tracking-widest uppercase bg-accent text-[#080808] hover:bg-white transition-colors"
+            style="clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);">
+            Post a Job →
+          </a>
+          <a href="/auth?mode=signin"
+            class="inline-flex items-center gap-2 px-6 py-3 text-[12px] font-display font-medium tracking-widest uppercase border border-[#1a1a22] text-[#888] hover:border-accent/50 hover:text-accent transition-all">
+            Sign In
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
