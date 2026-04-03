@@ -143,6 +143,89 @@ import Footer from '../../components/Footer.astro';
     ).join('');
   }
 
+  function statusBadge(status: string) {
+    if (status === 'active')    return 'border-emerald-800/40 text-emerald-600';
+    if (status === 'suspended') return 'border-[#ff6b35]/30 text-[#ff6b35]';
+    if (status === 'closed')    return 'border-[#333] text-[#555]';
+    return 'border-[#1a1a22] text-[#444]';
+  }
+
+  function renderJobList(jobs: any[]) {
+    const listEl = document.getElementById('jobs-list')!;
+    listEl.innerHTML = jobs.map(j => `
+      <div class="group border border-[#1a1a22] hover:border-[#2a2a2a] bg-[#080808] hover:bg-[#0c0c0c] transition-all duration-300 relative overflow-hidden" data-job-id="${j.id}">
+        <div class="p-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div class="flex-1">
+            <div class="flex flex-wrap items-center gap-2 mb-2">
+              <span class="text-[10px] font-display tracking-[0.15em] uppercase px-2 py-0.5 border border-[#00e5ff]/20 text-accent/70">${j.category}</span>
+              <span class="text-[10px] font-display tracking-wide border border-[#1a1a22] text-[#444] px-2 py-0.5">${j.type}</span>
+              <span class="job-status-badge text-[10px] font-display px-2 py-0.5 border ${statusBadge(j.status)}">${j.status}</span>
+              ${j.status === 'suspended' ? `<span class="text-[10px] text-[#555]">Suspended by admin · not visible on board</span>` : ''}
+              ${j.status === 'closed'    ? `<span class="text-[10px] text-[#555]">Not visible on board</span>` : ''}
+            </div>
+            <h3 class="font-display font-bold text-[#f0f0f0] text-[16px] tracking-tight">${j.title}</h3>
+            <p class="text-[13px] text-[#555] mt-1">${j.location || 'Remote'} · Posted ${new Date(j.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+          </div>
+          <div class="flex items-center gap-3 shrink-0 flex-wrap">
+            <div class="text-center border border-[#1a1a22] px-5 py-3">
+              <div class="text-xl font-display font-bold text-[#f0f0f0]">${j.applicant_count ?? 0}</div>
+              <div class="text-[10px] text-[#444] font-display tracking-widest uppercase">Applicants</div>
+            </div>
+            <a href="/employer/edit?id=${j.id}"
+              class="inline-flex items-center gap-2 px-4 py-3 text-[11px] font-display tracking-widest uppercase border border-[#1a1a22] text-[#666] hover:border-[#333] hover:text-[#aaa] transition-all whitespace-nowrap">
+              Edit
+            </a>
+            ${j.status !== 'suspended' ? `
+              <button type="button" data-action="${j.status === 'active' ? 'close' : 'reopen'}"
+                class="status-btn inline-flex items-center gap-2 px-4 py-3 text-[11px] font-display tracking-widest uppercase border transition-all whitespace-nowrap
+                  ${j.status === 'active'
+                    ? 'border-[#1a1a22] text-[#555] hover:border-[#ff6b35]/50 hover:text-[#ff6b35]'
+                    : 'border-[#1a1a22] text-[#555] hover:border-emerald-800 hover:text-emerald-500'}">
+                ${j.status === 'active' ? 'Close' : 'Reopen'}
+              </button>
+            ` : ''}
+            <a href="/employer/applicants?job_id=${j.id}"
+              class="inline-flex items-center gap-2 px-4 py-3 text-[11px] font-display tracking-widest uppercase border border-[#1a1a22] text-[#666] hover:border-accent hover:text-accent transition-all whitespace-nowrap">
+              Applicants →
+            </a>
+          </div>
+        </div>
+        <div class="absolute bottom-0 left-0 right-0 h-px bg-accent scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+      </div>
+    `).join('');
+
+    listEl.querySelectorAll<HTMLElement>('[data-job-id]').forEach(card => {
+      const jobId = card.dataset.jobId!;
+      card.querySelector<HTMLButtonElement>('.status-btn')?.addEventListener('click', async (e) => {
+        const btn = e.currentTarget as HTMLButtonElement;
+        const action = btn.dataset.action!;
+        const newStatus = action === 'close' ? 'closed' : 'active';
+        btn.disabled = true;
+        btn.textContent = '…';
+
+        const res = await fetch(`/api/employer/jobs/${jobId}`, {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus }),
+        });
+
+        if (res.ok) {
+          // Reload the whole list to reflect updated stats
+          const jobsRes = await fetch('/api/employer/jobs', { credentials: 'include' });
+          const updatedJobs = jobsRes.ok ? await jobsRes.json() as any[] : [];
+          const active = updatedJobs.filter((j: any) => j.status === 'active').length;
+          document.getElementById('stat-total')!.textContent  = String(updatedJobs.length);
+          document.getElementById('stat-active')!.textContent = String(active);
+          renderJobList(updatedJobs);
+        } else {
+          btn.disabled = false;
+          btn.textContent = action === 'close' ? 'Close' : 'Reopen';
+        }
+      });
+    });
+  }
+
   async function init() {
     const meRes = await fetch('/api/auth/me', { credentials: 'include' });
     if (!meRes.ok) { window.location.href = '/auth?mode=signin'; return; }
@@ -173,37 +256,7 @@ import Footer from '../../components/Footer.astro';
     if (jobs.length === 0) {
       document.getElementById('jobs-empty')!.classList.remove('hidden');
     } else {
-      listEl.innerHTML = jobs.map(j => `
-        <div class="group border border-[#1a1a22] hover:border-[#2a2a2a] bg-[#080808] hover:bg-[#0c0c0c] transition-all duration-300 relative overflow-hidden">
-          <div class="p-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div class="flex-1">
-              <div class="flex flex-wrap items-center gap-2 mb-2">
-                <span class="text-[10px] font-display tracking-[0.15em] uppercase px-2 py-0.5 border border-[#00e5ff]/20 text-accent/70">${j.category}</span>
-                <span class="text-[10px] font-display tracking-wide border border-[#1a1a22] text-[#444] px-2 py-0.5">${j.type}</span>
-                <span class="text-[10px] font-display px-2 py-0.5 border ${j.status === 'active' ? 'border-emerald-800/40 text-emerald-600' : j.status === 'suspended' ? 'border-[#ff6b35]/30 text-[#ff6b35]' : 'border-[#1a1a22] text-[#444]'}">${j.status}</span>
-                ${j.status === 'suspended' ? `<span class="text-[10px] text-[#555]">Not visible on board</span>` : ''}
-              </div>
-              <h3 class="font-display font-bold text-[#f0f0f0] text-[16px] tracking-tight">${j.title}</h3>
-              <p class="text-[13px] text-[#555] mt-1">${j.location || 'Remote'} · Posted ${new Date(j.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
-            </div>
-            <div class="flex items-center gap-3 shrink-0">
-              <div class="text-center border border-[#1a1a22] px-5 py-3">
-                <div class="text-xl font-display font-bold text-[#f0f0f0]">${j.applicant_count ?? 0}</div>
-                <div class="text-[10px] text-[#444] font-display tracking-widest uppercase">Applicants</div>
-              </div>
-              <a href="/employer/edit?id=${j.id}"
-                class="inline-flex items-center gap-2 px-4 py-3 text-[11px] font-display tracking-widest uppercase border border-[#1a1a22] text-[#666] hover:border-[#333] hover:text-[#aaa] transition-all whitespace-nowrap">
-                Edit
-              </a>
-              <a href="/employer/applicants?job_id=${j.id}"
-                class="inline-flex items-center gap-2 px-4 py-3 text-[11px] font-display tracking-widest uppercase border border-[#1a1a22] text-[#666] hover:border-accent hover:text-accent transition-all whitespace-nowrap">
-                View Applicants →
-              </a>
-            </div>
-          </div>
-          <div class="absolute bottom-0 left-0 right-0 h-px bg-accent scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
-        </div>
-      `).join('');
+      renderJobList(jobs);
     }
 
     document.getElementById('signout-btn')!.addEventListener('click', async () => {

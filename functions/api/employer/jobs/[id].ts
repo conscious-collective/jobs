@@ -72,7 +72,7 @@ export const onRequestPut: PagesFunction<Env> = async ({ request, params, env })
   return json({ ok: true, id: params.id });
 };
 
-// PATCH /api/employer/jobs/:id — save applicant filter preference for a job
+// PATCH /api/employer/jobs/:id — update status or saved applicant filter
 export const onRequestPatch: PagesFunction<Env> = async ({ request, params, env }) => {
   const token = getCookieToken(request);
   if (!token) return err('Unauthenticated', 401);
@@ -80,16 +80,29 @@ export const onRequestPatch: PagesFunction<Env> = async ({ request, params, env 
   if (!payload || payload.role !== 'employer') return err('Forbidden', 403);
 
   const job = await env.DB.prepare(
-    'SELECT id FROM jobs WHERE id = ? AND employer_id = ?'
-  ).bind(params.id, payload.sub).first();
+    'SELECT id, status FROM jobs WHERE id = ? AND employer_id = ?'
+  ).bind(params.id, payload.sub).first<{ id: string; status: string }>();
   if (!job) return err('Job not found', 404);
 
-  const { saved_applicant_filter } = await request.json<{ saved_applicant_filter: string }>();
-  if (typeof saved_applicant_filter !== 'string') return err('Invalid payload');
+  const body = await request.json<{ status?: string; saved_applicant_filter?: string }>();
 
-  await env.DB.prepare(
-    'UPDATE jobs SET saved_applicant_filter = ? WHERE id = ?'
-  ).bind(saved_applicant_filter, params.id).run();
+  if ('status' in body) {
+    // Employers may only set active or closed (not suspended — that's admin-only)
+    const allowed = ['active', 'closed'];
+    if (!allowed.includes(body.status!)) return err('Invalid status');
+    // Don't let employers reactivate a suspended job
+    if (job.status === 'suspended') return err('Cannot change status of a suspended job', 403);
+    await env.DB.prepare('UPDATE jobs SET status = ? WHERE id = ?').bind(body.status, params.id).run();
+    return json({ ok: true });
+  }
 
-  return json({ ok: true });
+  if ('saved_applicant_filter' in body) {
+    if (typeof body.saved_applicant_filter !== 'string') return err('Invalid payload');
+    await env.DB.prepare(
+      'UPDATE jobs SET saved_applicant_filter = ? WHERE id = ?'
+    ).bind(body.saved_applicant_filter, params.id).run();
+    return json({ ok: true });
+  }
+
+  return err('Nothing to update');
 };
