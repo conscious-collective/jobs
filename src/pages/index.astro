@@ -48,11 +48,6 @@ import Footer from '../components/Footer.astro';
           <div class="flex items-center gap-3">
             <input id="search" type="text" placeholder="Search roles, companies, keywords…"
               class="flex-1 bg-transparent border border-[#1a1a22] px-5 py-3 text-[14px] text-[#f0f0f0] placeholder-[#333] focus:outline-none focus:border-accent/50 transition-colors font-display" />
-            <!-- Saved-filter indicator (only shown when logged in and filters are saved) -->
-            <div id="filter-saved-badge" class="hidden shrink-0 flex items-center gap-1.5 text-[10px] font-display tracking-widest uppercase text-accent/60 border border-accent/20 px-2.5 py-1.5">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-              Saved
-            </div>
           </div>
 
           <div class="flex flex-wrap gap-2" id="cat-filters">
@@ -98,19 +93,16 @@ import Footer from '../components/Footer.astro';
 </BaseLayout>
 
 <script>
-  let allJobs: any[]   = [];
-  let activeCat        = 'All';
-  let activeType       = 'All Types';
-  let remoteOnly       = false;
-  let searchQuery      = '';
-  let activeTag        = '';
-  let isLoggedIn       = false;
-  let saveTimer: ReturnType<typeof setTimeout> | null = null;
+  let allJobs: any[] = [];
+  let activeCat      = 'All';
+  let activeType     = 'All Types';
+  let remoteOnly     = false;
+  let searchQuery    = '';
+  let activeTag      = '';
 
   const listEl    = document.getElementById('jobs-list')!;
   const loadingEl = document.getElementById('jobs-loading')!;
   const emptyEl   = document.getElementById('jobs-empty')!;
-  const badge     = document.getElementById('filter-saved-badge')!;
 
   // ── rendering ──────────────────────────────────────────────────────────────
 
@@ -202,8 +194,8 @@ import Footer from '../components/Footer.astro';
     `;
     document.getElementById('clear-tag-btn')!.addEventListener('click', () => {
       activeTag = '';
-      history.replaceState({}, '', '/');
       filter();
+      syncURL();
     });
   }
 
@@ -237,43 +229,15 @@ import Footer from '../components/Footer.astro';
     btn.classList.toggle('text-[#444]', !on);
   }
 
-  // ── save filters (debounced, only when logged in as seeker) ────────────────
-
-  function scheduleSave() {
-    if (!isLoggedIn) return;
-    if (saveTimer) clearTimeout(saveTimer);
-    saveTimer = setTimeout(persistFilters, 600);
-  }
-
-  async function persistFilters() {
-    const payload = JSON.stringify({
-      cat: activeCat, type: activeType, remote: remoteOnly, search: searchQuery,
-    });
-    try {
-      const res = await fetch('/api/profile', {
-        method: 'PATCH', credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ saved_job_filters: payload }),
-      });
-      if (res.ok) flashSavedBadge();
-    } catch {}
-  }
-
-  function flashSavedBadge() {
-    badge.classList.remove('hidden');
-    setTimeout(() => badge.classList.add('hidden'), 2500);
-  }
-
-  function applyFilters(f: { cat: string; type: string; remote: boolean; search: string }) {
-    activeCat   = f.cat;
-    activeType  = f.type;
-    remoteOnly  = f.remote;
-    searchQuery = f.search;
-    applyCatUI(activeCat);
-    applyTypeUI(activeType);
-    applyRemoteUI(remoteOnly);
-    (document.getElementById('search') as HTMLInputElement).value = searchQuery;
-    filter();
+  function syncURL() {
+    const p = new URLSearchParams();
+    if (activeCat    !== 'All')       p.set('cat',    activeCat);
+    if (activeType   !== 'All Types') p.set('type',   activeType);
+    if (remoteOnly)                   p.set('remote', '1');
+    if (searchQuery)                  p.set('q',      searchQuery);
+    if (activeTag)                    p.set('tag',    activeTag);
+    const qs = p.toString();
+    history.replaceState({}, '', qs ? `/?${qs}` : '/');
   }
 
   // ── event wiring ──────────────────────────────────────────────────────────
@@ -283,7 +247,7 @@ import Footer from '../components/Footer.astro';
       activeCat = btn.dataset.cat!;
       applyCatUI(activeCat);
       filter();
-      scheduleSave();
+      syncURL();
     });
   });
 
@@ -292,7 +256,7 @@ import Footer from '../components/Footer.astro';
       activeType = btn.dataset.type!;
       applyTypeUI(activeType);
       filter();
-      scheduleSave();
+      syncURL();
     });
   });
 
@@ -300,13 +264,13 @@ import Footer from '../components/Footer.astro';
     remoteOnly = !remoteOnly;
     applyRemoteUI(remoteOnly);
     filter();
-    scheduleSave();
+    syncURL();
   });
 
   document.getElementById('search')!.addEventListener('input', (e) => {
     searchQuery = (e.target as HTMLInputElement).value;
     filter();
-    scheduleSave();
+    syncURL();
   });
 
   // ── init ──────────────────────────────────────────────────────────────────
@@ -319,26 +283,6 @@ import Footer from '../components/Footer.astro';
       const signinEl = document.getElementById('nav-signin')!;
       signinEl.textContent = 'My Dashboard';
       signinEl.setAttribute('href', user.role === 'employer' ? '/employer/dashboard' : '/seeker/dashboard');
-
-      if (user.role === 'seeker') {
-        isLoggedIn = true;
-        // Load saved filters
-        const pr = await fetch('/api/profile', { credentials: 'include' });
-        if (pr.ok) {
-          const profile = await pr.json() as any;
-          if (profile.saved_job_filters) {
-            try {
-              const saved = JSON.parse(profile.saved_job_filters);
-              applyFilters({
-                cat:    saved.cat    ?? 'All',
-                type:   saved.type   ?? 'All Types',
-                remote: Boolean(saved.remote),
-                search: saved.search ?? '',
-              });
-            } catch {}
-          }
-        }
-      }
     } catch {}
   }
 
@@ -353,18 +297,21 @@ import Footer from '../components/Footer.astro';
     }
   }
 
-  // Read tag filter from URL
-  const urlTag = new URLSearchParams(window.location.search).get('tag');
-  if (urlTag) activeTag = urlTag;
+  // Read all filters from URL on load
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('cat'))    { activeCat    = urlParams.get('cat')!;    applyCatUI(activeCat); }
+  if (urlParams.get('type'))   { activeType   = urlParams.get('type')!;   applyTypeUI(activeType); }
+  if (urlParams.get('remote')) { remoteOnly   = true;                     applyRemoteUI(true); }
+  if (urlParams.get('q'))      { searchQuery  = urlParams.get('q')!;      (document.getElementById('search') as HTMLInputElement).value = searchQuery; }
+  if (urlParams.get('tag'))    { activeTag    = urlParams.get('tag')!; }
 
   // Listen for tag clicks from job cards
   window.addEventListener('filter-tag', (e: Event) => {
     activeTag = (e as CustomEvent).detail;
-    history.replaceState({}, '', `/?tag=${encodeURIComponent(activeTag)}`);
+    syncURL();
     filter();
   });
 
-  // Run auth check (which may set filters) before loading jobs so filter is applied immediately
   await checkAuth();
   loadJobs();
 </script>
