@@ -1,0 +1,151 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<BaseLayout
+  title="Company | Sustainability Jobs"
+  description="View company profile and open sustainability roles."
+>
+  <Nav />
+
+  <main class="pt-28 pb-24">
+    <div class="max-w-[860px] mx-auto px-6 lg:px-10">
+
+      <div id="loading" class="py-20 text-center text-[#444] font-display text-[13px] tracking-widest uppercase">
+        Loading…
+      </div>
+
+      <div id="notfound" class="hidden py-20 text-center">
+        <p class="text-[#555] text-[14px]">Company not found.</p>
+        <a href="/" class="text-accent hover:text-white transition-colors text-[13px] mt-2 inline-block">← Browse jobs</a>
+      </div>
+
+      <div id="content" class="hidden">
+        <a href="/" class="inline-flex items-center gap-2 text-[12px] text-[#444] hover:text-accent transition-colors font-display tracking-wider uppercase mb-10">
+          <svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M13 7H1M1 7L7 1M1 7L7 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          All Jobs
+        </a>
+
+        <!-- Company header -->
+        <div class="border border-[#1a1a22] bg-[#080808] p-8 mb-10">
+          <div class="flex items-start gap-6">
+            <div id="logo-wrap" class="hidden shrink-0 w-16 h-16 border border-[#1a1a22] bg-[#0d0d10] flex items-center justify-center overflow-hidden p-1">
+              <img id="company-logo" src="" alt="" class="w-full h-full object-contain" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="section-rule mb-4"></div>
+              <span class="tag">Company</span>
+              <h1 id="company-name" class="font-display font-bold text-[#f0f0f0] text-2xl tracking-tight mt-4 mb-3"></h1>
+              <div id="company-meta" class="flex flex-wrap gap-4 mb-4"></div>
+              <p id="company-description" class="text-[14px] text-[#888] leading-relaxed"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Jobs -->
+        <div>
+          <div class="flex items-center gap-3 mb-6">
+            <span class="text-[11px] font-display tracking-widest uppercase text-[#555]">Open Roles</span>
+            <span id="jobs-count" class="text-[10px] font-display px-2 py-0.5 border border-[#1a1a22] text-[#444]">0</span>
+          </div>
+
+          <div id="jobs-empty" class="hidden py-12 text-center border border-dashed border-[#1a1a22]">
+            <p class="text-[13px] text-[#555]">No open roles at the moment.</p>
+          </div>
+
+          <div id="jobs-list" class="space-y-px"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<script>
+  function timeAgo(dateStr: string) {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const days = Math.floor(diff / 86400000);
+    if (days === 0) return 'Today';
+    if (days === 1) return 'Yesterday';
+    if (days < 7) return `${days}d ago`;
+    if (days < 30) return `${Math.floor(days / 7)}w ago`;
+    return `${Math.floor(days / 30)}mo ago`;
+  }
+
+  async function init() {
+    const id = new URLSearchParams(window.location.search).get('id');
+    if (!id) {
+      document.getElementById('loading')!.classList.add('hidden');
+      document.getElementById('notfound')!.classList.remove('hidden');
+      return;
+    }
+
+    const res = await fetch(`/api/company/${id}`);
+    document.getElementById('loading')!.classList.add('hidden');
+
+    if (!res.ok) {
+      document.getElementById('notfound')!.classList.remove('hidden');
+      return;
+    }
+
+    const c = await res.json() as any;
+    document.getElementById('content')!.classList.remove('hidden');
+
+    document.title = `${c.company_name ?? 'Company'} | Sustainability Jobs`;
+
+    if (c.company_logo) {
+      const wrap = document.getElementById('logo-wrap')!;
+      (document.getElementById('company-logo') as HTMLImageElement).src = c.company_logo;
+      wrap.classList.remove('hidden');
+    }
+
+    document.getElementById('company-name')!.textContent = c.company_name ?? 'Unknown Company';
+
+    const meta = document.getElementById('company-meta')!;
+    const metaItems: string[] = [];
+    if (c.company_website) metaItems.push(`<a href="${c.company_website}" target="_blank" rel="noopener" class="text-[12px] text-accent/70 hover:text-accent transition-colors font-display">${c.company_website.replace(/^https?:\/\//, '')}</a>`);
+    if (c.company_hq) metaItems.push(`<span class="text-[12px] text-[#555] font-display">${c.company_hq}</span>`);
+    if (c.company_size) metaItems.push(`<span class="text-[12px] text-[#555] font-display">${c.company_size} employees</span>`);
+    meta.innerHTML = metaItems.join('<span class="text-[#2a2a2a]">·</span>');
+
+    if (c.company_description) {
+      document.getElementById('company-description')!.textContent = c.company_description;
+    }
+
+    const jobs: any[] = c.jobs ?? [];
+    document.getElementById('jobs-count')!.textContent = String(jobs.length);
+
+    if (jobs.length === 0) {
+      document.getElementById('jobs-empty')!.classList.remove('hidden');
+    } else {
+      document.getElementById('jobs-list')!.innerHTML = jobs.map(j => `
+        <a href="/view?id=${j.id}" class="group block border border-[#1a1a22] hover:border-[#2a2a2a] bg-[#080808] hover:bg-[#0c0c0c] transition-all duration-300 relative overflow-hidden">
+          <div class="p-7">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div class="flex-1">
+                <div class="flex flex-wrap items-center gap-2 mb-2">
+                  <span class="text-[10px] font-display tracking-[0.15em] uppercase px-2 py-0.5 border border-[#00e5ff]/20 text-accent/70">${j.category}</span>
+                  <span class="text-[10px] font-display tracking-wide border border-[#1a1a22] text-[#444] px-2 py-0.5">${j.type}</span>
+                  ${j.remote ? `<span class="text-[10px] font-display border border-accent/20 text-accent/60 px-2 py-0.5">Remote</span>` : ''}
+                  <span class="text-[10px] text-[#333] font-display">${timeAgo(j.created_at)}</span>
+                </div>
+                <h3 class="font-display font-bold text-[#f0f0f0] text-[16px] tracking-tight group-hover:text-accent transition-colors">${j.title}</h3>
+                <p class="text-[13px] text-[#555] mt-1">${j.location || 'Remote'}${j.salary ? ` · ${j.salary}` : ''}</p>
+                ${j.skills?.length ? `<div class="flex flex-wrap gap-1.5 mt-3">${j.skills.map((s: string) => `<span class="text-[10px] px-2 py-0.5 border border-accent/15 text-accent/50 font-display tracking-wide">${s}</span>`).join('')}</div>` : ''}
+              </div>
+              <span class="shrink-0 text-[11px] font-display tracking-widest uppercase border border-[#1a1a22] text-[#555] group-hover:border-accent group-hover:text-accent transition-all px-4 py-2.5 self-start">
+                View →
+              </span>
+            </div>
+          </div>
+          <div class="absolute bottom-0 left-0 right-0 h-px bg-accent scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+        </a>
+      `).join('');
+    }
+  }
+
+  init();
+</script>

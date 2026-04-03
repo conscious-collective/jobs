@@ -35,7 +35,7 @@ import Footer from '../components/Footer.astro';
         <h1 id="job-title" class="font-display font-bold text-[#f0f0f0] leading-tight tracking-tight mb-3" style="font-size: clamp(1.75rem, 4vw, 2.75rem);"></h1>
 
         <div class="flex flex-wrap items-center gap-3 mb-8">
-          <span id="job-company" class="text-[15px] text-[#888] font-display"></span>
+          <a id="job-company" href="#" class="text-[15px] text-[#888] font-display hover:text-accent transition-colors"></a>
           <span id="job-location" class="text-[13px] text-[#555] border-l border-[#1a1a22] pl-3"></span>
           <span id="job-type" class="text-[11px] font-display tracking-wide border border-[#1a1a22] text-[#555] px-2.5 py-1"></span>
           <span id="job-salary" class="hidden text-[11px] font-display tracking-wide border border-accent/20 text-accent/70 px-2.5 py-1"></span>
@@ -72,7 +72,13 @@ import Footer from '../components/Footer.astro';
             <a href="/" class="inline-flex items-center gap-2 px-6 py-3 text-[12px] font-display font-medium tracking-widest uppercase border border-[#1a1a22] text-[#666] hover:border-accent/50 hover:text-accent transition-all">
               ← Browse More Jobs
             </a>
+            <button id="share-btn"
+              class="inline-flex items-center gap-2 px-6 py-3 text-[12px] font-display font-medium tracking-widest uppercase border border-[#1a1a22] text-[#666] hover:border-accent/50 hover:text-accent transition-all">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              Share
+            </button>
           </div>
+          <p id="share-confirm" class="hidden text-[11px] text-accent font-display tracking-wide mt-3">Link copied to clipboard.</p>
         </div>
       </div>
     </div>
@@ -101,7 +107,9 @@ import Footer from '../components/Footer.astro';
 
         document.getElementById('job-category')!.textContent = j.category;
         document.getElementById('job-title')!.textContent = j.title;
-        document.getElementById('job-company')!.textContent = j.company;
+        const companyEl = document.getElementById('job-company') as HTMLAnchorElement;
+        companyEl.textContent = j.company;
+        if (j.employer_id) companyEl.href = `/company?id=${j.employer_id}`;
         document.getElementById('job-location')!.textContent = j.location || '';
         if (j.remote) {
           const remoteTag = document.createElement('span');
@@ -118,10 +126,23 @@ import Footer from '../components/Footer.astro';
         document.getElementById('job-date')!.textContent = new Date(j.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
         document.getElementById('job-description')!.textContent = j.description ?? '';
 
+        // Share button
+        document.getElementById('share-btn')!.addEventListener('click', async () => {
+          try { await navigator.clipboard.writeText(window.location.href); } catch {}
+          const confirm = document.getElementById('share-confirm')!;
+          confirm.classList.remove('hidden');
+          setTimeout(() => confirm.classList.add('hidden'), 3000);
+        });
+
         // Company card
         if (j.company_logo || j.company_description) {
           const card = document.getElementById('company-card')!;
           card.classList.remove('hidden');
+          if (j.employer_id) {
+            card.style.cursor = 'pointer';
+            card.title = `View ${j.company_name || j.company} profile`;
+            card.addEventListener('click', () => { window.location.href = `/company?id=${j.employer_id}`; });
+          }
           if (j.company_logo) {
             const logoEl = document.getElementById('company-logo') as HTMLImageElement;
             logoEl.src = j.company_logo;
@@ -142,10 +163,11 @@ import Footer from '../components/Footer.astro';
           tagsEl.appendChild(span);
         });
         (j.tags ?? []).forEach((t: string) => {
-          const span = document.createElement('span');
-          span.className = 'text-[11px] px-2.5 py-1 border border-[#1a1a22] text-[#555] font-display tracking-wide';
-          span.textContent = t;
-          tagsEl.appendChild(span);
+          const a = document.createElement('a');
+          a.href = `/?tag=${encodeURIComponent(t)}`;
+          a.className = 'text-[11px] px-2.5 py-1 border border-[#1a1a22] text-[#555] font-display tracking-wide hover:border-accent/40 hover:text-accent transition-colors cursor-pointer';
+          a.textContent = t;
+          tagsEl.appendChild(a);
         });
 
         document.title = `${j.title} at ${j.company} | Sustainability Jobs`;

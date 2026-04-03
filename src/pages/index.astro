@@ -103,6 +103,7 @@ import Footer from '../components/Footer.astro';
   let activeType       = 'All Types';
   let remoteOnly       = false;
   let searchQuery      = '';
+  let activeTag        = '';
   let isLoggedIn       = false;
   let saveTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -143,7 +144,7 @@ import Footer from '../components/Footer.astro';
               <div class="text-[13px] text-[#666] mb-2">${j.company}${j.location ? ` · ${j.location}` : ''}${j.salary ? ` · <span class="text-[#888]">${j.salary}</span>` : ''}</div>
               <p class="text-[13px] text-[#555] leading-relaxed line-clamp-2">${j.description ?? ''}</p>
               ${j.skills && j.skills.length ? `<div class="flex flex-wrap gap-1.5 mt-3">${j.skills.map((s: string) => `<span class="text-[10px] px-2 py-0.5 border border-accent/15 text-accent/50 font-display tracking-wide">${s}</span>`).join('')}</div>` : ''}
-              ${j.tags && j.tags.length ? `<div class="flex flex-wrap gap-1.5 mt-2">${j.tags.map((t: string) => `<span class="text-[10px] px-2 py-0.5 border border-[#1a1a22] text-[#444] font-display tracking-wide">${t}</span>`).join('')}</div>` : ''}
+              ${j.tags && j.tags.length ? `<div class="flex flex-wrap gap-1.5 mt-2">${j.tags.map((t: string) => `<a href="/?tag=${encodeURIComponent(t)}" onclick="event.preventDefault();event.stopPropagation();window.dispatchEvent(new CustomEvent('filter-tag',{detail:'${t.replace(/'/g, "\\'")}'}));" class="text-[10px] px-2 py-0.5 border border-[#1a1a22] text-[#444] font-display tracking-wide hover:border-accent/40 hover:text-accent transition-colors">${t}</a>`).join('')}</div>` : ''}
             </div>
             <span class="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 text-[11px] font-display tracking-widest uppercase border border-[#1a1a22] text-[#666] group-hover:border-accent group-hover:text-accent transition-all duration-200 self-start">
               ${j.apply_url ? 'Apply on Site' : 'View &amp; Apply'}
@@ -163,9 +164,33 @@ import Footer from '../components/Footer.astro';
       const matchType   = activeType === 'All Types' || j.type === activeType;
       const matchRemote = !remoteOnly || j.remote;
       const matchSearch = !q || j.title.toLowerCase().includes(q) || j.company.toLowerCase().includes(q) || (j.description ?? '').toLowerCase().includes(q);
-      return matchCat && matchType && matchRemote && matchSearch;
+      const matchTag    = !activeTag || (j.tags ?? []).includes(activeTag);
+      return matchCat && matchType && matchRemote && matchSearch && matchTag;
     });
     renderJobs(filtered);
+    renderTagBanner();
+  }
+
+  function renderTagBanner() {
+    let banner = document.getElementById('tag-filter-banner');
+    if (!activeTag) { banner?.remove(); return; }
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'tag-filter-banner';
+      banner.className = 'flex items-center gap-3 mb-6 px-4 py-3 border border-accent/20 bg-accent/5 text-[12px] font-display text-accent/80';
+      const filtersEl = document.getElementById('cat-filters')!.closest('.flex.flex-col')!;
+      filtersEl.after(banner);
+    }
+    banner.innerHTML = `
+      <span class="tracking-wider uppercase">Filtered by tag:</span>
+      <span class="px-2.5 py-0.5 border border-accent/30 text-accent tracking-wide">${activeTag}</span>
+      <button id="clear-tag-btn" class="ml-auto text-[11px] text-[#555] hover:text-[#aaa] uppercase tracking-widest transition-colors">✕ Clear</button>
+    `;
+    document.getElementById('clear-tag-btn')!.addEventListener('click', () => {
+      activeTag = '';
+      history.replaceState({}, '', '/');
+      filter();
+    });
   }
 
   // ── filter state helpers ───────────────────────────────────────────────────
@@ -313,6 +338,17 @@ import Footer from '../components/Footer.astro';
       loadingEl.textContent = 'Failed to load jobs.';
     }
   }
+
+  // Read tag filter from URL
+  const urlTag = new URLSearchParams(window.location.search).get('tag');
+  if (urlTag) activeTag = urlTag;
+
+  // Listen for tag clicks from job cards
+  window.addEventListener('filter-tag', (e: Event) => {
+    activeTag = (e as CustomEvent).detail;
+    history.replaceState({}, '', `/?tag=${encodeURIComponent(activeTag)}`);
+    filter();
+  });
 
   // Run auth check (which may set filters) before loading jobs so filter is applied immediately
   await checkAuth();

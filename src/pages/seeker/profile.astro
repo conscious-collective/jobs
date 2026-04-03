@@ -43,7 +43,14 @@ const EXP_OPTIONS = [
         </a>
 
         <div class="section-rule mb-4"></div>
-        <span class="tag">Candidate Profile</span>
+        <div class="flex items-start justify-between gap-4">
+          <span class="tag">Candidate Profile</span>
+          <a id="preview-link" href="#" target="_blank"
+            class="inline-flex items-center gap-2 text-[11px] font-display tracking-widest uppercase text-[#444] hover:text-accent transition-colors">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Preview
+          </a>
+        </div>
         <h1 class="font-display font-bold text-[#f0f0f0] text-2xl tracking-tight mt-4 mb-2">Your Profile</h1>
         <p class="text-[13px] text-[#555] mb-10">A complete profile gets noticed faster. Details save time when applying.</p>
 
@@ -335,8 +342,9 @@ const EXP_OPTIONS = [
   async function init() {
     const meRes = await fetch('/api/auth/me', { credentials: 'include' });
     if (!meRes.ok) { window.location.href = '/auth?mode=signin'; return; }
-    const me = await meRes.json() as { role: string };
+    const me = await meRes.json() as { id: string; role: string };
     if (me.role !== 'seeker') { window.location.href = '/'; return; }
+    (document.getElementById('preview-link') as HTMLAnchorElement).href = `/candidate?id=${me.id}`;
 
     const profileRes = await fetch('/api/profile', { credentials: 'include' });
     if (!profileRes.ok) { window.location.href = '/seeker/dashboard'; return; }
