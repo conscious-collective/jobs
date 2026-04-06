@@ -158,9 +158,18 @@ const EXP_OPTIONS = [
             <p class="text-[10px] font-display tracking-widest uppercase text-[#333] border-b border-[#1a1a22] pb-3">Links</p>
 
             <div>
-              <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Resume Link</label>
-              <input type="url" id="resume-url" placeholder="Google Drive, Dropbox, or PDF link"
-                class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
+              <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">Resume</label>
+              <input type="file" id="resume-input" accept=".pdf,.doc,.docx" class="hidden" />
+              <div class="flex items-center gap-3 border-b border-[#1a1a22] pb-2.5">
+                <button type="button" id="resume-btn"
+                  class="shrink-0 text-[11px] font-display tracking-widest uppercase px-3 py-1.5 border border-[#1a1a22] text-[#666] hover:border-accent hover:text-accent transition-colors">
+                  Upload
+                </button>
+                <span id="resume-name" class="text-[13px] text-[#444] truncate">No resume uploaded</span>
+                <button type="button" id="remove-resume-btn" class="hidden ml-auto shrink-0 text-[11px] font-display uppercase text-[#444] hover:text-[#ff6b35] transition-colors">Remove</button>
+              </div>
+              <p id="resume-status" class="text-[12px] mt-1.5"></p>
+              <p class="text-[11px] text-[#333] mt-1">PDF, DOC or DOCX · Max 5 MB</p>
             </div>
             <div>
               <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">LinkedIn Profile</label>
@@ -249,6 +258,48 @@ const EXP_OPTIONS = [
   let selectedSkills = new Set<string>();
   let openToWork = false;
   let pendingAvatar: string | null = null;
+  let pendingResumeUrl: string | null = null; // null = unchanged, '' = removed, string = new URL
+
+  async function uploadResume(file: File) {
+    const statusEl = document.getElementById('resume-status')!;
+    statusEl.textContent = 'Uploading…';
+    statusEl.style.color = '#888';
+
+    const fd = new FormData();
+    fd.append('file', file);
+
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: fd });
+      const data = await res.json() as any;
+      if (res.ok) {
+        pendingResumeUrl = data.url;
+        showResume(file.name);
+        statusEl.textContent = 'Resume ready — click Save Profile.';
+        statusEl.style.color = '#00e5ff';
+      } else {
+        statusEl.textContent = data.error ?? 'Upload failed.';
+        statusEl.style.color = '#ff6b35';
+      }
+    } catch {
+      statusEl.textContent = 'Upload failed.';
+      statusEl.style.color = '#ff6b35';
+    }
+  }
+
+  function showResume(name: string) {
+    document.getElementById('resume-name')!.textContent = name;
+    (document.getElementById('resume-name')! as HTMLElement).style.color = '#f0f0f0';
+    document.getElementById('remove-resume-btn')!.classList.remove('hidden');
+  }
+
+  function hideResume() {
+    pendingResumeUrl = '';
+    document.getElementById('resume-name')!.textContent = 'No resume uploaded';
+    (document.getElementById('resume-name')! as HTMLElement).style.color = '';
+    document.getElementById('remove-resume-btn')!.classList.add('hidden');
+    document.getElementById('resume-status')!.textContent = '';
+    (document.getElementById('resume-input') as HTMLInputElement).value = '';
+  }
 
   async function uploadAvatar(file: File) {
     const statusEl = document.getElementById('avatar-status')!;
@@ -307,7 +358,6 @@ const EXP_OPTIONS = [
       bio:              (document.getElementById('bio') as HTMLTextAreaElement).value.trim() || null,
       location:         (document.getElementById('location') as HTMLInputElement).value.trim() || null,
       years_experience: (document.getElementById('years-experience') as HTMLSelectElement).value || null,
-      resume_url:       (document.getElementById('resume-url') as HTMLInputElement).value.trim() || null,
       linkedin_url:     (document.getElementById('linkedin-url') as HTMLInputElement).value.trim() || null,
       portfolio_url:    (document.getElementById('portfolio-url') as HTMLInputElement).value.trim() || null,
       skills:           Array.from(selectedSkills),
@@ -315,6 +365,7 @@ const EXP_OPTIONS = [
     };
 
     if (pendingAvatar !== null) body.avatar = pendingAvatar || null;
+    if (pendingResumeUrl !== null) body.resume_url = pendingResumeUrl || null;
 
     const res = await fetch('/api/profile', {
       method: 'PATCH',
@@ -358,7 +409,11 @@ const EXP_OPTIONS = [
     if (p.bio) (document.getElementById('bio') as HTMLTextAreaElement).value = p.bio;
     if (p.location) (document.getElementById('location') as HTMLInputElement).value = p.location;
     if (p.years_experience) (document.getElementById('years-experience') as HTMLSelectElement).value = p.years_experience;
-    if (p.resume_url) (document.getElementById('resume-url') as HTMLInputElement).value = p.resume_url;
+    if (p.resume_url) {
+      const filename = p.resume_url.split('/').pop() ?? 'resume';
+      showResume(filename);
+      // Don't set pendingResumeUrl — null means "unchanged", so existing value is preserved on save
+    }
     if (p.linkedin_url) (document.getElementById('linkedin-url') as HTMLInputElement).value = p.linkedin_url;
     if (p.portfolio_url) (document.getElementById('portfolio-url') as HTMLInputElement).value = p.portfolio_url;
     if (p.avatar) { showAvatar(p.avatar); pendingAvatar = p.avatar; }
@@ -411,6 +466,15 @@ const EXP_OPTIONS = [
       pendingAvatar = '';
       hideAvatar();
     });
+
+    // Resume upload
+    const resumeInput = document.getElementById('resume-input') as HTMLInputElement;
+    document.getElementById('resume-btn')!.addEventListener('click', () => resumeInput.click());
+    resumeInput.addEventListener('change', async () => {
+      const file = resumeInput.files?.[0];
+      if (file) await uploadResume(file);
+    });
+    document.getElementById('remove-resume-btn')!.addEventListener('click', hideResume);
 
     document.getElementById('save-btn')!.addEventListener('click', saveProfile);
 

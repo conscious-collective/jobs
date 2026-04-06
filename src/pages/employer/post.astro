@@ -388,7 +388,7 @@ const SKILLS = [
 
       const data = await res.json() as any;
       if (res.ok) {
-        window.location.href = `/view?id=${data.id}`;
+        window.location.href = data.slug ? `/jobs/${data.slug}` : `/view?id=${data.id}`;
       } else {
         errEl.textContent = data.error ?? 'Something went wrong.';
         errEl.classList.remove('hidden');

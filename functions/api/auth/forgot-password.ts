@@ -40,7 +40,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'C22 Jobs <noreply@c22.earth>',
+      from: 'C22 Jobs <hello@c22.space>',
       to: email,
       subject: 'Reset your C22 Jobs password',
       html: `

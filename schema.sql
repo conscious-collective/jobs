@@ -76,5 +76,6 @@ CREATE TABLE IF NOT EXISTS messages (
   application_id TEXT NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
   sender_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   body TEXT NOT NULL,
+  read_at TEXT,
   created_at TEXT DEFAULT (datetime('now'))
 );

@@ -15,6 +15,10 @@
       <a href="/about" class="text-[12px] text-[#555] hover:text-[#f0f0f0] transition-colors tracking-[0.1em] uppercase font-display">About</a>
       <a id="nav-employers" href="/employers" class="text-[12px] text-[#555] hover:text-[#f0f0f0] transition-colors tracking-[0.1em] uppercase font-display">For Employers</a>
       <a href="/auth?mode=signup&role=employer" class="text-[12px] text-[#555] hover:text-[#f0f0f0] transition-colors tracking-[0.1em] uppercase font-display">Post a Job</a>
+      <a id="nav-inbox" href="/inbox" class="hidden relative items-center gap-1.5 text-[12px] text-[#555] hover:text-[#f0f0f0] transition-colors tracking-[0.1em] uppercase font-display">
+        Inbox
+        <span id="nav-inbox-badge" class="hidden min-w-[16px] h-[16px] rounded-full bg-accent text-[#080808] text-[9px] font-display font-bold flex items-center justify-center px-1"></span>
+      </a>
       <a id="nav-auth" href="/auth?mode=signin" class="text-[12px] text-[#555] hover:text-[#f0f0f0] transition-colors tracking-[0.1em] uppercase font-display">Sign In</a>
     </nav>
 
@@ -33,6 +37,10 @@
       <a href="/about" class="text-[14px] text-[#666] hover:text-[#f0f0f0] transition-colors tracking-wide font-display uppercase" onclick="document.getElementById('mobile-menu').classList.add('hidden')">About</a>
       <a id="nav-employers-mobile" href="/employers" class="text-[14px] text-[#666] hover:text-[#f0f0f0] transition-colors tracking-wide font-display uppercase" onclick="document.getElementById('mobile-menu').classList.add('hidden')">For Employers</a>
       <a href="/auth?mode=signup&role=employer" class="text-[14px] text-[#666] hover:text-[#f0f0f0] transition-colors tracking-wide font-display uppercase" onclick="document.getElementById('mobile-menu').classList.add('hidden')">Post a Job</a>
+      <a id="nav-inbox-mobile" href="/inbox" class="hidden items-center gap-2 text-[14px] text-[#666] hover:text-[#f0f0f0] transition-colors tracking-wide font-display uppercase" onclick="document.getElementById('mobile-menu').classList.add('hidden')">
+        Inbox
+        <span id="nav-inbox-badge-mobile" class="hidden min-w-[16px] h-[16px] rounded-full bg-accent text-[#080808] text-[9px] font-display font-bold flex items-center justify-center px-1"></span>
+      </a>
       <a id="nav-auth-mobile" href="/auth?mode=signin" class="text-[14px] text-accent font-medium font-display" onclick="document.getElementById('mobile-menu').classList.add('hidden')">Sign In</a>
     </div>
   </div>
@@ -71,8 +79,30 @@
       authEl.setAttribute('href', href);
       authMobileEl.textContent = label;
       authMobileEl.setAttribute('href', href);
+      const inboxEl = document.getElementById('nav-inbox')!;
+      const inboxMobileEl = document.getElementById('nav-inbox-mobile')!;
+      inboxEl.classList.remove('hidden');
+      inboxEl.classList.add('flex');
+      inboxMobileEl.classList.remove('hidden');
+      inboxMobileEl.classList.add('flex');
       document.getElementById('nav-employers')?.remove();
       document.getElementById('nav-employers-mobile')?.remove();
+
+      // Fetch and display unread count
+      fetch('/api/messages/unread', { credentials: 'include' })
+        .then(r => r.ok ? r.json() : { count: 0 })
+        .then((data: any) => {
+          const count = data.count ?? 0;
+          const badge = document.getElementById('nav-inbox-badge')!;
+          const badgeMobile = document.getElementById('nav-inbox-badge-mobile')!;
+          if (count > 0) {
+            const label = count > 99 ? '99+' : String(count);
+            badge.textContent = label;
+            badgeMobile.textContent = label;
+            badge.classList.remove('hidden');
+            badgeMobile.classList.remove('hidden');
+          }
+        }).catch(() => {});
     }
   }).catch(() => {});
 </script>

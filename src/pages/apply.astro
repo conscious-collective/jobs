@@ -63,11 +63,21 @@ import Footer from '../components/Footer.astro';
 
               <div>
                 <label class="block text-[11px] font-display tracking-wider text-[#444] uppercase mb-2">
-                  Resume Link <span class="text-[#ff6b35]">*</span>
+                  Resume <span class="text-[#ff6b35]">*</span>
                 </label>
-                <input type="url" id="resume-url" required placeholder="Google Drive, Dropbox, or LinkedIn PDF link"
-                  class="w-full bg-transparent border-b border-[#1a1a22] pb-2.5 text-[14px] text-[#f0f0f0] placeholder-[#2a2a2a] focus:outline-none focus:border-accent transition-colors" />
-                <p class="text-[11px] text-[#333] mt-1.5">Paste a shareable link to your resume (Google Drive, Dropbox, etc.)</p>
+                <!-- Hidden field holds the URL; submit logic reads this unchanged -->
+                <input type="text" id="resume-url" class="hidden" />
+                <input type="file" id="resume-input" accept=".pdf,.doc,.docx" class="hidden" />
+                <div class="flex items-center gap-3 border-b border-[#1a1a22] pb-2.5">
+                  <button type="button" id="resume-btn"
+                    class="shrink-0 text-[11px] font-display tracking-widest uppercase px-3 py-1.5 border border-[#1a1a22] text-[#666] hover:border-accent hover:text-accent transition-colors">
+                    Upload
+                  </button>
+                  <span id="resume-name" class="text-[13px] text-[#444] truncate">No resume selected</span>
+                  <button type="button" id="remove-resume-btn" class="hidden ml-auto shrink-0 text-[11px] font-display uppercase text-[#444] hover:text-[#ff6b35] transition-colors">Remove</button>
+                </div>
+                <p id="resume-status" class="text-[12px] mt-1.5"></p>
+                <p class="text-[11px] text-[#333] mt-1">PDF, DOC or DOCX · Max 5 MB</p>
               </div>
             </div>
           </div>
@@ -184,7 +194,54 @@ import Footer from '../components/Footer.astro';
     (document.getElementById('email') as HTMLInputElement).value = me.email;
     if (profile.full_name) (document.getElementById('full-name') as HTMLInputElement).value = profile.full_name;
     if (profile.phone) (document.getElementById('phone') as HTMLInputElement).value = profile.phone;
-    if (profile.resume_url) (document.getElementById('resume-url') as HTMLInputElement).value = profile.resume_url;
+    if (profile.linkedin_url) (document.getElementById('linkedin') as HTMLInputElement).value = profile.linkedin_url;
+    if (profile.portfolio_url) (document.getElementById('portfolio') as HTMLInputElement).value = profile.portfolio_url;
+    if (profile.resume_url) {
+      (document.getElementById('resume-url') as HTMLInputElement).value = profile.resume_url;
+      const filename = profile.resume_url.split('/').pop() ?? 'resume';
+      document.getElementById('resume-name')!.textContent = filename;
+      (document.getElementById('resume-name')! as HTMLElement).style.color = '#f0f0f0';
+      document.getElementById('remove-resume-btn')!.classList.remove('hidden');
+    }
+
+    // Resume upload
+    const resumeInput = document.getElementById('resume-input') as HTMLInputElement;
+    document.getElementById('resume-btn')!.addEventListener('click', () => resumeInput.click());
+    resumeInput.addEventListener('change', async () => {
+      const file = resumeInput.files?.[0];
+      if (!file) return;
+      const statusEl = document.getElementById('resume-status')!;
+      statusEl.textContent = 'Uploading…';
+      statusEl.style.color = '#888';
+      const fd = new FormData();
+      fd.append('file', file);
+      try {
+        const res = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: fd });
+        const data = await res.json() as any;
+        if (res.ok) {
+          (document.getElementById('resume-url') as HTMLInputElement).value = data.url;
+          document.getElementById('resume-name')!.textContent = file.name;
+          (document.getElementById('resume-name')! as HTMLElement).style.color = '#f0f0f0';
+          document.getElementById('remove-resume-btn')!.classList.remove('hidden');
+          statusEl.textContent = 'Resume ready.';
+          statusEl.style.color = '#00e5ff';
+        } else {
+          statusEl.textContent = data.error ?? 'Upload failed.';
+          statusEl.style.color = '#ff6b35';
+        }
+      } catch {
+        statusEl.textContent = 'Upload failed.';
+        document.getElementById('resume-status')!.style.color = '#ff6b35';
+      }
+    });
+    document.getElementById('remove-resume-btn')!.addEventListener('click', () => {
+      (document.getElementById('resume-url') as HTMLInputElement).value = '';
+      document.getElementById('resume-name')!.textContent = 'No resume selected';
+      (document.getElementById('resume-name')! as HTMLElement).style.color = '';
+      document.getElementById('remove-resume-btn')!.classList.add('hidden');
+      document.getElementById('resume-status')!.textContent = '';
+      resumeInput.value = '';
+    });
 
     // Render qualifying questions
     const questions: Question[] = job.questions ?? [];
@@ -215,6 +272,14 @@ import Footer from '../components/Footer.astro';
       const successEl = document.getElementById('apply-success')!;
       btn.disabled = true; btn.textContent = 'Submitting…';
       errEl.classList.add('hidden');
+
+      const resumeUrl = (document.getElementById('resume-url') as HTMLInputElement).value;
+      if (!resumeUrl) {
+        errEl.textContent = 'Please upload your resume before submitting.';
+        errEl.classList.remove('hidden');
+        btn.disabled = false; btn.textContent = 'Submit Application';
+        return;
+      }
 
       // Collect question answers
       const answers: Array<{ question_id: string; answer: string }> = [];

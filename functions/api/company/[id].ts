@@ -12,7 +12,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ params, env }) => {
        FROM users WHERE id = ? AND role = 'employer'`
     ).bind(params.id).first<any>(),
     env.DB.prepare(
-      `SELECT id, title, company, location, remote, type, category, salary, tags, skills, created_at
+      `SELECT id, slug, title, company, location, remote, type, category, salary, tags, skills, created_at
        FROM jobs WHERE employer_id = ? AND status = 'active'
        ORDER BY created_at DESC`
     ).bind(params.id).all(),

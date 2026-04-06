@@ -358,7 +358,7 @@ const SKILLS = [
     (job.tags ?? []).forEach((t: string) => selectedTags.add(t));
     renderTagChips();
     (document.getElementById('type') as HTMLSelectElement).value = job.type ?? '';
-    (document.getElementById('view-link') as HTMLAnchorElement).href = `/view?id=${jobId}`;
+    (document.getElementById('view-link') as HTMLAnchorElement).href = job.slug ? `/jobs/${job.slug}` : `/view?id=${jobId}`;
 
     setRemote(job.remote === 1 || job.remote === true);
     if (job.category) selectCategory(job.category);
@@ -429,7 +429,8 @@ const SKILLS = [
 
       const data = await res.json() as any;
       if (res.ok) {
-        window.location.href = `/view?id=${jobId}`;
+        const slug = data.slug ?? job.slug;
+        window.location.href = slug ? `/jobs/${slug}` : `/view?id=${jobId}`;
       } else {
         errEl.textContent = data.error ?? 'Something went wrong.';
         errEl.classList.remove('hidden');

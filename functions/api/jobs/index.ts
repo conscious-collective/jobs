@@ -1,5 +1,6 @@
 import { json, err, options } from '../_lib/cors';
 import { getCookieToken, verifyJWT } from '../_lib/jwt';
+import { generateSlug, uniqueSlug } from '../_lib/slug';
 
 interface Env { DB: D1Database; JWT_SECRET: string; }
 
@@ -8,7 +9,7 @@ export const onRequestOptions = () => options();
 // GET /api/jobs — list all active jobs
 export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
   const { results } = await env.DB.prepare(
-    `SELECT j.id, j.title, j.company, j.location, j.remote, j.type, j.category, j.description, j.tags, j.skills, j.salary, j.apply_url, j.created_at,
+    `SELECT j.id, j.slug, j.title, j.company, j.location, j.remote, j.type, j.category, j.description, j.tags, j.skills, j.salary, j.apply_url, j.created_at,
             u.company_name as employer_company
      FROM jobs j JOIN users u ON j.employer_id = u.id
      WHERE j.status = 'active'
@@ -46,18 +47,23 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   if (!validCategories.includes(category)) return err('Invalid category');
 
   const id = crypto.randomUUID();
+  const createdAt = new Date().toISOString();
+  const baseSlug = generateSlug(title, company, createdAt);
+  const slug = await uniqueSlug(baseSlug, env.DB);
+
   await env.DB.prepare(
     `INSERT INTO jobs
-       (id, employer_id, title, company, location, remote, type, category, description, tags, skills, questions, salary, apply_url)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+       (id, employer_id, title, company, location, remote, type, category, description, tags, skills, questions, salary, apply_url, slug, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).bind(
     id, payload.sub, title, company, location ?? '', remote ? 1 : 0,
     type, category, description ?? '',
     JSON.stringify(tags ?? []),
     JSON.stringify(skills ?? []),
     JSON.stringify((questions ?? []).filter(q => q.question?.trim())),
-    salary ?? null, apply_url ?? null
+    salary ?? null, apply_url ?? null,
+    slug, createdAt
   ).run();
 
-  return json({ ok: true, id }, 201);
+  return json({ ok: true, id, slug }, 201);
 };

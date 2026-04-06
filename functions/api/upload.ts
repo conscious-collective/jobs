@@ -29,13 +29,16 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     'image/webp': 'webp',
     'image/gif': 'gif',
     'image/svg+xml': 'svg',
+    'application/pdf': 'pdf',
+    'application/msword': 'doc',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
   };
 
   const ext = allowedTypes[file.type];
-  if (!ext) return err('Invalid file type. Accepted: JPG, PNG, WebP, GIF, SVG.');
+  if (!ext) return err('Invalid file type. Accepted: JPG, PNG, WebP, GIF, SVG, PDF, DOC, DOCX.');
 
-  const maxBytes = 2 * 1024 * 1024; // 2 MB
-  if (file.size > maxBytes) return err('File too large. Maximum size is 2 MB.');
+  const maxBytes = 5 * 1024 * 1024; // 5 MB
+  if (file.size > maxBytes) return err('File too large. Maximum size is 5 MB.');
 
   const key = `${crypto.randomUUID()}.${ext}`;
   const buffer = await file.arrayBuffer();

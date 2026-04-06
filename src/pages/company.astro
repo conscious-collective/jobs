@@ -122,7 +122,7 @@ import Footer from '../components/Footer.astro';
       document.getElementById('jobs-empty')!.classList.remove('hidden');
     } else {
       document.getElementById('jobs-list')!.innerHTML = jobs.map(j => `
-        <a href="/view?id=${j.id}" class="group block border border-[#1a1a22] hover:border-[#2a2a2a] bg-[#080808] hover:bg-[#0c0c0c] transition-all duration-300 relative overflow-hidden">
+        <a href="${j.slug ? `/jobs/${j.slug}` : `/view?id=${j.id}`}" class="group block border border-[#1a1a22] hover:border-[#2a2a2a] bg-[#080808] hover:bg-[#0c0c0c] transition-all duration-300 relative overflow-hidden">
           <div class="p-7">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div class="flex-1">

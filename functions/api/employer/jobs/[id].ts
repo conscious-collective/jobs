@@ -1,5 +1,6 @@
 import { json, err, options } from '../../_lib/cors';
 import { getCookieToken, verifyJWT } from '../../_lib/jwt';
+import { generateSlug, uniqueSlug } from '../../_lib/slug';
 
 interface Env { DB: D1Database; JWT_SECRET: string; }
 
@@ -13,7 +14,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, params, env })
   if (!payload || payload.role !== 'employer') return err('Forbidden', 403);
 
   const job = await env.DB.prepare(
-    `SELECT id, title, company, location, remote, type, category, description,
+    `SELECT id, slug, title, company, location, remote, type, category, description,
             tags, skills, questions, salary, apply_url, status
      FROM jobs WHERE id = ? AND employer_id = ?`
   ).bind(params.id, payload.sub).first<any>();
@@ -35,8 +36,8 @@ export const onRequestPut: PagesFunction<Env> = async ({ request, params, env })
   if (!payload || payload.role !== 'employer') return err('Forbidden', 403);
 
   const job = await env.DB.prepare(
-    'SELECT id FROM jobs WHERE id = ? AND employer_id = ?'
-  ).bind(params.id, payload.sub).first();
+    'SELECT id, title, company, created_at FROM jobs WHERE id = ? AND employer_id = ?'
+  ).bind(params.id, payload.sub).first<{ id: string; title: string; company: string; created_at: string }>();
   if (!job) return err('Job not found', 404);
 
   const body = await request.json<{
@@ -54,22 +55,35 @@ export const onRequestPut: PagesFunction<Env> = async ({ request, params, env })
   if (!validTypes.includes(type)) return err('Invalid type');
   if (!validCategories.includes(category)) return err('Invalid category');
 
-  await env.DB.prepare(
-    `UPDATE jobs SET
-       title = ?, company = ?, location = ?, remote = ?, type = ?, category = ?,
-       description = ?, tags = ?, skills = ?, questions = ?, salary = ?, apply_url = ?
-     WHERE id = ?`
-  ).bind(
+  // Regenerate slug if title or company changed
+  const titleChanged = title !== job.title;
+  const companyChanged = company !== job.company;
+  let slug: string | undefined;
+  if (titleChanged || companyChanged) {
+    const baseSlug = generateSlug(title, company, job.created_at);
+    slug = await uniqueSlug(baseSlug, env.DB, params.id as string);
+  }
+
+  const slugSet = slug ? ', slug = ?' : '';
+  const bindValues: any[] = [
     title, company, location ?? '', remote ? 1 : 0,
     type, category, description ?? '',
     JSON.stringify(tags ?? []),
     JSON.stringify(skills ?? []),
     JSON.stringify((questions ?? []).filter((q: any) => q.question?.trim())),
     salary ?? null, apply_url ?? null,
-    params.id
-  ).run();
+  ];
+  if (slug) bindValues.push(slug);
+  bindValues.push(params.id);
 
-  return json({ ok: true, id: params.id });
+  await env.DB.prepare(
+    `UPDATE jobs SET
+       title = ?, company = ?, location = ?, remote = ?, type = ?, category = ?,
+       description = ?, tags = ?, skills = ?, questions = ?, salary = ?, apply_url = ?${slugSet}
+     WHERE id = ?`
+  ).bind(...bindValues).run();
+
+  return json({ ok: true, id: params.id, slug: slug ?? null });
 };
 
 // PATCH /api/employer/jobs/:id — update status or saved applicant filter
